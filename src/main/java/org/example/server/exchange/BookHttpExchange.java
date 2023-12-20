@@ -16,7 +16,6 @@ import java.util.Map;
 
 @Getter
 @Setter
-@Builder
 public class BookHttpExchange extends HttpExchange {
     private final Map<String, Object> attributes = new HashMap<>();
     private String requestMethod;
