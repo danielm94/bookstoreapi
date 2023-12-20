@@ -18,6 +18,9 @@ dependencies {
 
     testCompileOnly ("org.projectlombok:lombok:1.18.30")
     testAnnotationProcessor ("org.projectlombok:lombok:1.18.30")
+
+    implementation("com.google.flogger:flogger-system-backend:0.8")
+    implementation("com.google.flogger:flogger:0.8")
 }
 
 tasks.test {
