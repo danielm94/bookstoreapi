@@ -1,29 +1,25 @@
 package org.example.server.context;
 
 import com.sun.net.httpserver.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Setter
+@Getter
 public class BookContext extends HttpContext {
-    private final HttpServer server;
-    private final String path;
-
-    private final Map<String, Object> attributes;
-    private final List<Filter> filters;
+    private final Map<String, Object> attributes = new HashMap<>();
+    private final List<Filter> filters = new ArrayList<>();
+    private HttpServer server;
+    private String path;
     private HttpHandler handler;
-
     private Authenticator authenticator;
 
-
-    public BookContext(HttpServer server, String path) {
-        this.server = server;
-        this.path = path;
-        this.filters = new ArrayList<>();
-        this.attributes = new HashMap<>();
-    }
 
     @Override
     public HttpHandler getHandler() {
