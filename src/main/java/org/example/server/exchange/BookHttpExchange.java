@@ -83,7 +83,7 @@ public class BookHttpExchange extends HttpExchange {
         this.responseCode = rCode;
         val headerBuilder = new StringBuilder();
 
-        headerBuilder.append(protocol).append(" ").append(rCode).append(" ").append("Placeholder").append("\r\n");
+        headerBuilder.append(protocol).append(" ").append(rCode).append("\r\n");
 
         for (val entry : responseHeaders.entrySet()) {
             for (val value : entry.getValue()) {
