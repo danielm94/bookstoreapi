@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import lombok.NonNull;
 import lombok.SneakyThrows;
+import lombok.extern.flogger.Flogger;
 import lombok.val;
 import org.example.server.context.BookContext;
 import org.example.server.processors.RequestProcessor;
@@ -17,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
+@Flogger
 public class BookServer extends HttpServer {
     private final Map<String, HttpContext> contextMap;
     private boolean serverIsRunning;
@@ -45,6 +47,7 @@ public class BookServer extends HttpServer {
 
         while (serverIsRunning) {
             val clientSocket = socket.accept();
+            log.atFine().log("Accepted new client socket...");
             val parser = new RequestDataParser(contextMap);
             var exchange = parser.getBookHttpExchangeFromClientSocket(clientSocket);
             val requestProcessor = new RequestProcessor(clientSocket, exchange);
@@ -71,7 +74,9 @@ public class BookServer extends HttpServer {
 
     @Override
     public HttpContext createContext(String path, HttpHandler handler) {
-        var bookContext = new BookContext(this, path);
+        var bookContext = new BookContext();
+        bookContext.setServer(this);
+        bookContext.setPath(path);
         bookContext.setHandler(handler);
         contextMap.put(path, bookContext);
         return bookContext;
@@ -79,7 +84,9 @@ public class BookServer extends HttpServer {
 
     @Override
     public HttpContext createContext(String path) {
-        var bookContext = new BookContext(this, path);
+        var bookContext = new BookContext();
+        bookContext.setServer(this);
+        bookContext.setPath(path);
         contextMap.put(path, bookContext);
         return bookContext;
     }
