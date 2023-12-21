@@ -3,93 +3,162 @@ package org.example.server.socket;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpContext;
 import lombok.NonNull;
-import lombok.SneakyThrows;
+import lombok.extern.flogger.Flogger;
 import lombok.val;
-import org.example.server.HttpMethod;
+import org.apache.commons.lang3.StringUtils;
 import org.example.server.exchange.BookHttpExchange;
+import org.example.server.util.io.IOUtil;
+import org.example.server.util.request.RequestLineParser;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.Scanner;
 
-
+@Flogger
 public class ClientSocketParser {
     public static final int NO_BODY_IN_REQUEST = -1;
+    public static final String NEW_LINE_REGEX_PATTERN = "\r\n|\n";
+
     private final Map<String, HttpContext> contextMap;
 
     public ClientSocketParser(@NonNull Map<String, HttpContext> contextMap) {
         this.contextMap = contextMap;
     }
 
-    @SneakyThrows(IOException.class)
     public BookHttpExchange getBookHttpExchangeFromClientSocket(@NonNull Socket clientSocket) {
-        val inputStream = clientSocket.getInputStream();
-        val scanner = new Scanner(inputStream);
-        val requestList = new ArrayList<String>();
-        while (scanner.hasNext()) {
-            requestList.add(scanner.nextLine());
-        }
+        log.atFine().log("Processing new client request from socket: %s", clientSocket);
 
         val exchange = new BookHttpExchange();
-        parseRequestLine(requestList, exchange);
+        try {
+            exchange.setResponseBody(clientSocket.getOutputStream());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
-        val messageBodyLine = parseHeaders(requestList, exchange);
+        val clientInputStream = getClientInputStream(clientSocket);
+        if (clientInputStream == null) {
+            return sendOffExchangePrematurely(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR,
+                    "Server failed to retrieve input stream from client request.");
+        }
 
-        if (messageBodyLine != NO_BODY_IN_REQUEST) {
-            parseBody(requestList, exchange, messageBodyLine + 1);
+        val requestString = IOUtil.parseInputStreamToText(clientInputStream);
+        if (StringUtils.isBlank(requestString)) {
+            return sendOffExchangePrematurely(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR,
+                    "Server failed to parse input stream from client request.");
+        }
+
+        val requestArray = requestString.split(NEW_LINE_REGEX_PATTERN);
+
+        if (requestArray.length == 0) {
+            log.atWarning().log("Client request string is empty after splitting by new line: %s", requestString);
+            return sendOffExchangePrematurely(exchange, HttpURLConnection.HTTP_BAD_REQUEST,
+                    "Empty request string.");
+        }
+
+        val requestLineString = requestArray[0];
+        log.atFine().log("Parsing request line string [%s] and mapping to an object...", requestLineString);
+        val requestLine = RequestLineParser.parseRequestLine(requestLineString);
+        if (requestLine == null) {
+            return sendOffExchangePrematurely(exchange, HttpURLConnection.HTTP_BAD_REQUEST,
+                    "Malformed request line: " + requestLineString);
+        }
+        if (requestLine.getHttpMethod() == null) {
+            return sendOffExchangePrematurely(exchange, HttpURLConnection.HTTP_BAD_REQUEST,
+                    "Unsupported HttpMethod found in request line: " + requestLineString);
+        }
+
+        exchange.setRequestMethod(requestLine.getHttpMethod().toString());
+
+        val path = requestLine.getPath();
+        val context = contextMap.get(path);
+        if (context == null) {
+            log.atWarning().log("Server does not support the path: %s", path);
+            return sendOffExchangePrematurely(exchange, HttpURLConnection.HTTP_NOT_FOUND,
+                    "Server does not support the path: " + path);
+        }
+        exchange.setHttpContext(context);
+
+        val protocol = requestLine.getProtocol();
+        exchange.setProtocol(protocol);
+
+        val messageBodyLine = parseHeaders(requestArray, exchange);
+
+        val bodyFoundInRequest = messageBodyLine != NO_BODY_IN_REQUEST;
+        if (bodyFoundInRequest) {
+            parseBody(requestArray, exchange, messageBodyLine + 1);
+        }
+
+        log.atFine().log("Successfully parsed request data from client: %s", clientSocket);
+        return exchange;
+    }
+
+
+    private static BookHttpExchange sendOffExchangePrematurely(@NonNull BookHttpExchange exchange, int statusCode, @NonNull String message) {
+        log.atFine()
+           .log("Sending off HttpExchange prematurely. Status code: %d, Message: %s, Exchange: %s", statusCode, message, exchange);
+
+        val responseBytes = message.getBytes(StandardCharsets.UTF_8);
+        exchange.setResponseCode(statusCode);
+        exchange.sendResponseHeaders(statusCode, responseBytes.length);
+        try (val body = exchange.getResponseBody()) {
+            body.write(responseBytes);
+        } catch (IOException e) {
+            log.atSevere()
+               .withCause(e)
+               .log("Failed to write response to the client.",
+                       statusCode, message, exchange);
         }
         return exchange;
     }
 
-    private void parseBody(@NonNull ArrayList<String> requestList, @NonNull BookHttpExchange exchange, int start) {
+    private static InputStream getClientInputStream(@NonNull Socket clientSocket) {
+        log.atFine().log("Getting input stream from client %s", clientSocket.getRemoteSocketAddress());
+        InputStream inputStream;
+        try {
+            inputStream = clientSocket.getInputStream();
+        } catch (IOException e) {
+            log.atWarning()
+               .withCause(e)
+               .log("Could not get input stream from client %s", clientSocket.getRemoteSocketAddress());
+            return null;
+        }
+        return inputStream;
+    }
+
+
+    private int parseHeaders(@NonNull String[] requestArray, @NonNull BookHttpExchange exchange) {
+        log.atFine().log("Parsing headers from request data.");
+        val headers = new Headers();
+        exchange.setRequestHeaders(headers);
+        for (var i = 1; i < requestArray.length; i++) {
+            var line = requestArray[i];
+            var endOfHeadersReached = line.isBlank() || line.isEmpty();
+            if (endOfHeadersReached) return i;
+            var keyValueArray = requestArray[i].split(":");
+            val key = keyValueArray[0];
+            val value = keyValueArray[1];
+            headers.add(key, value);
+            log.atFinest().log("Adding header with key:%s|value:%s", key, value);
+        }
+        log.atFine().log("Parsed %d headers from request data.", headers.size());
+        return NO_BODY_IN_REQUEST;
+    }
+
+    private void parseBody(@NonNull String[] requestArray, @NonNull BookHttpExchange exchange, int start) {
+        log.atFine().log("Parsing request body from request data.");
         val bodyBuilder = new StringBuilder();
-        for (var i = start; i < requestList.size(); i++) {
-            bodyBuilder.append(requestList.get(i)).append(System.lineSeparator());
+        for (var i = start; i < requestArray.length; i++) {
+            bodyBuilder.append(requestArray[i]).append(System.lineSeparator());
         }
         val body = bodyBuilder.toString();
+        log.atFine().log("Parsed the following body from the request data - %s", body);
         val bodyStream = new ByteArrayInputStream(body.getBytes());
         exchange.setRequestBody(bodyStream);
     }
 
-    private void parseRequestLine(@NonNull List<String> requestList, @NonNull BookHttpExchange exchange) {
-        val requestLine = requestList.getFirst();
-        val requestLineValues = requestLine.split("\\s");
-        if (requestLineValues.length < 3) exchange.setResponseCode(HttpURLConnection.HTTP_BAD_REQUEST);
-        val requestMethod = requestLineValues[0];
-        validateRequestMethod(exchange, requestMethod);
-        exchange.setRequestMethod(requestMethod);
-        val path = requestLineValues[1];
-        val context = contextMap.get(path);
-        if (context == null) exchange.setResponseCode(HttpURLConnection.HTTP_NOT_FOUND);
-        exchange.setHttpContext(context);
-        val protocol = requestLineValues[2];
-        exchange.setProtocol(protocol);
-    }
 
-    private int parseHeaders(@NonNull List<String> requestList, @NonNull BookHttpExchange exchange) {
-        val headers = new Headers();
-        exchange.setRequestHeaders(headers);
-        for (var i = 1; i < requestList.size(); i++) {
-            var line = requestList.get(i);
-            var endOfHeadersReached = line.isBlank() || line.isEmpty();
-            if (endOfHeadersReached) return i;
-            var keyValueArray = requestList.get(i).split(":");
-            headers.add(keyValueArray[0], keyValueArray[1]);
-        }
-
-        return NO_BODY_IN_REQUEST;
-    }
-
-    private static void validateRequestMethod(@NonNull BookHttpExchange exchange, @NonNull String requestMethod) {
-        try {
-            HttpMethod.valueOf(requestMethod);
-        } catch (IllegalArgumentException e) {
-            exchange.setResponseCode(HttpURLConnection.HTTP_BAD_REQUEST);
-        }
-    }
 }
