@@ -21,6 +21,9 @@ dependencies {
 
     implementation("com.google.flogger:flogger-system-backend:0.8")
     implementation("com.google.flogger:flogger:0.8")
+
+    implementation("org.apache.commons:commons-lang3:3.14.0")
+
 }
 
 tasks.test {
