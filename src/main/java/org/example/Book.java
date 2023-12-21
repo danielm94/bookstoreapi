@@ -3,15 +3,16 @@ package org.example;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
 public class Book {
-
-    private UUID id;
+    private final UUID id;
     private String bookName;
     private String author;
-    private String isbn;
+    private long isbn;
     private BigDecimal price;
-
+    private LocalDateTime dateAdded;
+    private LocalDateTime dateUpdated;
 }
