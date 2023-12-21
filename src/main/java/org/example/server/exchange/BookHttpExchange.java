@@ -4,13 +4,17 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpPrincipal;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.SneakyThrows;
+import lombok.val;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,8 +24,8 @@ public class BookHttpExchange extends HttpExchange {
     private final Map<String, Object> attributes = new HashMap<>();
     private String requestMethod;
     private URI requestURI;
-    private Headers requestHeaders;
-    private Headers responseHeaders;
+    private Headers requestHeaders = new Headers();
+    private Headers responseHeaders = new Headers();
     private HttpContext httpContext;
     private int responseCode;
     private InetSocketAddress remoteAddress;
@@ -76,7 +80,27 @@ public class BookHttpExchange extends HttpExchange {
     @Override
     @SneakyThrows(IOException.class)
     public void sendResponseHeaders(int rCode, long responseLength) {
+        this.responseCode = rCode;
+        val headerBuilder = new StringBuilder();
 
+        headerBuilder.append(protocol).append(" ").append(rCode).append(" ").append("Placeholder").append("\r\n");
+
+        for (val entry : responseHeaders.entrySet()) {
+            for (val value : entry.getValue()) {
+                headerBuilder.append(entry.getKey()).append(": ").append(value).append("\r\n");
+            }
+        }
+
+        if (responseLength >= 0) {
+            headerBuilder.append("Content-Length: ").append(responseLength).append("\r\n");
+        }
+
+        headerBuilder.append("\r\n");
+
+        if (responseBody != null) {
+            responseBody.write(headerBuilder.toString().getBytes(StandardCharsets.UTF_8));
+            responseBody.flush();
+        }
     }
 
     @Override
@@ -111,7 +135,8 @@ public class BookHttpExchange extends HttpExchange {
 
     @Override
     public void setStreams(InputStream i, OutputStream o) {
-
+        this.requestBody = i;
+        this.responseBody = o;
     }
 
     @Override
