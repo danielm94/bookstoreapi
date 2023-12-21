@@ -1,7 +1,6 @@
 package org.example.server.context;
 
 import com.sun.net.httpserver.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
