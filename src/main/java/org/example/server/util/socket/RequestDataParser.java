@@ -1,4 +1,4 @@
-package org.example.server.socket;
+package org.example.server.util.socket;
 
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpContext;
@@ -19,13 +19,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @Flogger
-public class ClientSocketParser {
+public class RequestDataParser {
     public static final int NO_BODY_IN_REQUEST = -1;
     public static final String NEW_LINE_REGEX_PATTERN = "\r\n|\n";
 
     private final Map<String, HttpContext> contextMap;
 
-    public ClientSocketParser(@NonNull Map<String, HttpContext> contextMap) {
+    public RequestDataParser(@NonNull Map<String, HttpContext> contextMap) {
         this.contextMap = contextMap;
     }
 

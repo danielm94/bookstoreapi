@@ -8,7 +8,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 import org.example.server.context.BookContext;
 import org.example.server.processors.RequestProcessor;
-import org.example.server.socket.ClientSocketParser;
+import org.example.server.util.socket.RequestDataParser;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -45,7 +45,7 @@ public class BookServer extends HttpServer {
 
         while (serverIsRunning) {
             val clientSocket = socket.accept();
-            val parser = new ClientSocketParser(contextMap);
+            val parser = new RequestDataParser(contextMap);
             var exchange = parser.getBookHttpExchangeFromClientSocket(clientSocket);
             val requestProcessor = new RequestProcessor(clientSocket, exchange);
             executor.execute(requestProcessor);
