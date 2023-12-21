@@ -6,7 +6,9 @@ import lombok.NonNull;
 import lombok.extern.flogger.Flogger;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
+import org.example.server.context.BookContext;
 import org.example.server.exchange.BookHttpExchange;
+import org.example.server.handlers.FailureHandler;
 import org.example.server.util.io.IOUtil;
 import org.example.server.util.request.RequestLineParser;
 
@@ -15,7 +17,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @Flogger
@@ -101,17 +102,12 @@ public class RequestDataParser {
         log.atFine()
            .log("Sending off HttpExchange prematurely. Status code: %d, Message: %s, Exchange: %s", statusCode, message, exchange);
 
-        val responseBytes = message.getBytes(StandardCharsets.UTF_8);
-        exchange.setResponseCode(statusCode);
-        exchange.sendResponseHeaders(statusCode, responseBytes.length);
-        try (val body = exchange.getResponseBody()) {
-            body.write(responseBytes);
-        } catch (IOException e) {
-            log.atSevere()
-               .withCause(e)
-               .log("Failed to write response to the client.",
-                       statusCode, message, exchange);
+        val failureHandler = new FailureHandler(statusCode, message);
+        if (exchange.getHttpContext() == null) {
+            exchange.setHttpContext(new BookContext());
         }
+        exchange.getHttpContext().setHandler(failureHandler);
+        exchange.setProtocol("HTTP/1.1");
         return exchange;
     }
 
