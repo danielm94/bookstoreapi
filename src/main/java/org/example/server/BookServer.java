@@ -5,15 +5,16 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import lombok.NonNull;
 import lombok.SneakyThrows;
+import lombok.val;
 import org.example.server.context.BookContext;
+import org.example.server.processors.RequestProcessor;
+import org.example.server.socket.ClientSocketParser;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.concurrent.Executor;
 
 public class BookServer extends HttpServer {
@@ -36,17 +37,18 @@ public class BookServer extends HttpServer {
     }
 
 
-
     @Override
     @SneakyThrows(IOException.class)
     public void start() {
         this.socket = new ServerSocket(address.getPort(), backlog, address.getAddress());
         serverIsRunning = true;
-        var clientSocket = socket.accept();
-        var clientSocketText = new ArrayList<String>();
-        var scanner = new Scanner(clientSocket.getInputStream());
-        while(scanner.hasNext()){
-            clientSocketText.add(scanner.nextLine());
+
+        while (serverIsRunning) {
+            val clientSocket = socket.accept();
+            val parser = new ClientSocketParser(contextMap);
+            var exchange = parser.getBookHttpExchangeFromClientSocket(clientSocket);
+            val requestProcessor = new RequestProcessor(clientSocket, exchange);
+            executor.execute(requestProcessor);
         }
     }
 
