@@ -2,12 +2,14 @@ package org.example.server.util.socket;
 
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpContext;
+import com.sun.net.httpserver.HttpHandler;
 import lombok.NonNull;
 import lombok.extern.flogger.Flogger;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.example.server.context.BookContext;
 import org.example.server.exchange.BookHttpExchange;
+import org.example.server.handlers.DoNothingHandler;
 import org.example.server.handlers.FailureHandler;
 import org.example.server.util.io.IOUtil;
 import org.example.server.util.request.RequestLineParser;
@@ -37,7 +39,11 @@ public class RequestDataParser {
         try {
             exchange.setResponseBody(clientSocket.getOutputStream());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            log.atWarning()
+               .withCause(e)
+               .log("Could not get the output stream from the client socket.");
+            setHandler(exchange, new DoNothingHandler());
+            return exchange;
         }
 
         val clientInputStream = getClientInputStream(clientSocket);
@@ -103,12 +109,16 @@ public class RequestDataParser {
            .log("Sending off HttpExchange prematurely. Status code: %d, Message: %s, Exchange: %s", statusCode, message, exchange);
 
         val failureHandler = new FailureHandler(statusCode, message);
+        setHandler(exchange, failureHandler);
+        exchange.setProtocol("HTTP/1.1");
+        return exchange;
+    }
+
+    private static void setHandler(BookHttpExchange exchange, HttpHandler handler) {
         if (exchange.getHttpContext() == null) {
             exchange.setHttpContext(new BookContext());
         }
-        exchange.getHttpContext().setHandler(failureHandler);
-        exchange.setProtocol("HTTP/1.1");
-        return exchange;
+        exchange.getHttpContext().setHandler(handler);
     }
 
     private static InputStream getClientInputStream(@NonNull Socket clientSocket) {
