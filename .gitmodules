@@ -1,0 +1,3 @@
+[submodule "DatabaseConnectionPool"]
+	path = DatabaseConnectionPool
+	url = git@github.com:danielm94/databaseconnectionpool.git
