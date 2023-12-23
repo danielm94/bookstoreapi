@@ -25,6 +25,8 @@ dependencies {
     implementation("org.apache.commons:commons-lang3:3.14.0")
 
     implementation("com.mysql:mysql-connector-j:8.2.0")
+
+    implementation(project(":DatabaseConnectionPool"))
 }
 
 tasks.test {
