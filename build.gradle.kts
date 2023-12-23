@@ -27,6 +27,9 @@ dependencies {
     implementation("com.mysql:mysql-connector-j:8.2.0")
 
     implementation(project(":DatabaseConnectionPool"))
+
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.16.0")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.16.0")
 }
 
 tasks.test {
