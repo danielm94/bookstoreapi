@@ -48,12 +48,14 @@ public class RequestDataParser {
 
         val clientInputStream = getClientInputStream(clientSocket);
         if (clientInputStream == null) {
+            log.atWarning().log("Client input stream is null...");
             return sendOffExchangePrematurely(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR,
                     "Server failed to retrieve input stream from client request.");
         }
 
         val requestString = IOUtil.parseInputStreamToText(clientInputStream);
         if (StringUtils.isBlank(requestString)) {
+            log.atWarning().log("Failed to parse request String");
             return sendOffExchangePrematurely(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR,
                     "Server failed to parse input stream from client request.");
         }
@@ -70,6 +72,7 @@ public class RequestDataParser {
         log.atFine().log("Parsing request line string [%s] and mapping to an object...", requestLineString);
         val requestLine = RequestLineParser.parseRequestLine(requestLineString);
         if (requestLine == null) {
+            log.atWarning().log("Request line is null");
             return sendOffExchangePrematurely(exchange, HttpURLConnection.HTTP_BAD_REQUEST,
                     "Malformed request line: " + requestLineString);
         }
