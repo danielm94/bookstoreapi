@@ -14,6 +14,9 @@ import java.util.Map;
 @Flogger
 public class ResultSetParser {
 
+    private ResultSetParser() {
+    }
+
     public static List<Map<String, Object>> parseResultSetToListOfMaps(@NonNull ResultSet resultSet) throws SQLException {
         log.atFine().log("Parsing result set to a list of maps...");
         val meta = resultSet.getMetaData();
