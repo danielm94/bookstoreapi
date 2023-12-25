@@ -12,7 +12,7 @@ import lombok.extern.flogger.Flogger;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import com.github.danielm94.server.handlers.DoNothingHandler;
-import com.github.danielm94.server.util.request.RequestLineParser;
+import com.github.danielm94.server.util.parsers.requestline.RequestLineParser;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
