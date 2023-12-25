@@ -31,7 +31,7 @@ public class DatabaseMigrationUtil {
         ConnectionPoolManager.getInstance().returnConnection(connection);
     }
 
-    public static boolean schemaExists(DatabaseSchemas schema) throws SQLException, InterruptedException {
+    public static boolean schemaExists(@NonNull DatabaseSchemas schema) throws SQLException, InterruptedException {
         val connection = ConnectionPoolManager.getInstance().getConnection();
         val statement = connection.prepareStatement(CHECK_IF_SCHEMA_EXISTS_QUERY);
         statement.setString(1, schema.getSchemaName());
@@ -41,7 +41,7 @@ public class DatabaseMigrationUtil {
         return !resultMapList.isEmpty() && !resultMapList.getFirst().isEmpty();
     }
 
-    public static boolean tableExists(DatabaseSchemas schema, DatabaseTables table) throws SQLException, InterruptedException {
+    public static boolean tableExists(@NonNull DatabaseSchemas schema, @NonNull DatabaseTables table) throws SQLException, InterruptedException {
         val connection = ConnectionPoolManager.getInstance().getConnection();
         val statement = connection.prepareStatement(CHECK_IF_TABLE_EXISTS_QUERY);
         statement.setString(1, schema.getSchemaName());
