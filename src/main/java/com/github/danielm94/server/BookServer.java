@@ -9,7 +9,7 @@ import lombok.SneakyThrows;
 import lombok.extern.flogger.Flogger;
 import lombok.val;
 import com.github.danielm94.server.processors.RequestProcessor;
-import com.github.danielm94.server.util.socket.RequestDataParser;
+import com.github.danielm94.server.util.parsers.RequestDataParser;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

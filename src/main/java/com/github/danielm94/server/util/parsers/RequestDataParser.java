@@ -1,4 +1,4 @@
-package com.github.danielm94.server.util.socket;
+package com.github.danielm94.server.util.parsers;
 
 import com.github.danielm94.server.context.BookContext;
 import com.github.danielm94.server.exchange.BookHttpExchange;
