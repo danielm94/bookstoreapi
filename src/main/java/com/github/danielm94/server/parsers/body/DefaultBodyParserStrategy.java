@@ -2,9 +2,10 @@ package com.github.danielm94.server.parsers.body;
 
 import lombok.extern.flogger.Flogger;
 import lombok.val;
+import org.apache.commons.io.IOUtils;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 @Flogger
 public class DefaultBodyParserStrategy implements BodyParserStrategy {
@@ -21,9 +22,9 @@ public class DefaultBodyParserStrategy implements BodyParserStrategy {
             if (line.isBlank() || line.isEmpty()) requestBodyReached = true;
         }
 
-        val body = bodyBuilder.toString();
+        val body = bodyBuilder.toString().trim();
         log.atFine().log("Parsed the following body from the request data - %s", body);
 
-        return new ByteArrayInputStream(body.getBytes());
+        return IOUtils.toInputStream(body, StandardCharsets.UTF_8);
     }
 }
