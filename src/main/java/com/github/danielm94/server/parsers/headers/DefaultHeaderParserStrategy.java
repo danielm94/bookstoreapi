@@ -4,8 +4,6 @@ import com.sun.net.httpserver.Headers;
 import lombok.extern.flogger.Flogger;
 import lombok.val;
 
-import java.util.stream.Stream;
-
 @Flogger
 public class DefaultHeaderParserStrategy implements HeaderParserStrategy {
 

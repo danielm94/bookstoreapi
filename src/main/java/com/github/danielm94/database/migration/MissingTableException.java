@@ -8,8 +8,4 @@ public class MissingTableException extends SQLException {
         super(reason);
     }
 
-
-    public MissingTableException(String reason, Throwable cause) {
-        super(reason, cause);
-    }
 }

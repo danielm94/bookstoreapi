@@ -8,8 +8,4 @@ public class MissingSchemaException extends SQLException {
         super(reason);
     }
 
-
-    public MissingSchemaException(String reason, Throwable cause) {
-        super(reason, cause);
-    }
 }
