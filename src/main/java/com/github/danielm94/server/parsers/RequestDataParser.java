@@ -1,20 +1,22 @@
-package com.github.danielm94.server.util.parsers;
+package com.github.danielm94.server.parsers;
 
 import com.github.danielm94.server.context.BookContext;
 import com.github.danielm94.server.exchange.BookHttpExchange;
+import com.github.danielm94.server.handlers.DoNothingHandler;
 import com.github.danielm94.server.handlers.FailureHandler;
+import com.github.danielm94.server.parsers.body.BodyParserStrategy;
+import com.github.danielm94.server.parsers.headers.HeaderParserStrategy;
+import com.github.danielm94.server.parsers.requestline.RequestLineParserStrategy;
+import com.github.danielm94.server.util.RequestHeaders;
 import com.github.danielm94.server.util.io.IOUtil;
-import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpHandler;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.flogger.Flogger;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
-import com.github.danielm94.server.handlers.DoNothingHandler;
-import com.github.danielm94.server.util.parsers.requestline.RequestLineParser;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -22,15 +24,15 @@ import java.net.Socket;
 import java.util.Map;
 
 @Flogger
+@AllArgsConstructor
 public class RequestDataParser {
-    public static final int NO_BODY_IN_REQUEST = -1;
     public static final String NEW_LINE_REGEX_PATTERN = "\r\n|\n";
 
     private final Map<String, HttpContext> contextMap;
+    private final RequestLineParserStrategy requestLineParser;
+    private final HeaderParserStrategy headerParser;
+    private final BodyParserStrategy bodyParser;
 
-    public RequestDataParser(@NonNull Map<String, HttpContext> contextMap) {
-        this.contextMap = contextMap;
-    }
 
     public BookHttpExchange getBookHttpExchangeFromClientSocket(@NonNull Socket clientSocket) {
         log.atFine().log("Processing new client request from socket: %s", clientSocket);
@@ -70,7 +72,7 @@ public class RequestDataParser {
 
         val requestLineString = requestArray[0];
         log.atFine().log("Parsing request line string [%s] and mapping to an object...", requestLineString);
-        val requestLine = RequestLineParser.parseRequestLine(requestLineString);
+        val requestLine = requestLineParser.parseRequestLine(requestLineString);
         if (requestLine == null) {
             log.atWarning().log("Request line is null");
             return sendOffExchangePrematurely(exchange, HttpURLConnection.HTTP_BAD_REQUEST,
@@ -95,11 +97,14 @@ public class RequestDataParser {
         val protocol = requestLine.getProtocol();
         exchange.setProtocol(protocol);
 
-        val messageBodyLine = parseHeaders(requestArray, exchange);
+        val headers = headerParser.parseHeaders(requestArray);
+        exchange.setRequestHeaders(headers);
+        val contentLengthString = headers.getFirst(RequestHeaders.CONTENT_LENGTH.getHeaderKey());
+        val contentLength = Integer.parseInt(contentLengthString.trim());
 
-        val bodyFoundInRequest = messageBodyLine != NO_BODY_IN_REQUEST;
-        if (bodyFoundInRequest) {
-            parseBody(requestArray, exchange, messageBodyLine + 1);
+        if (contentLength > 0) {
+            val requestBody = bodyParser.parseBody(requestArray);
+            exchange.setRequestBody(requestBody);
         }
 
         log.atFine().log("Successfully parsed request data from client: %s", clientSocket);
@@ -137,37 +142,4 @@ public class RequestDataParser {
         }
         return inputStream;
     }
-
-
-    private int parseHeaders(@NonNull String[] requestArray, @NonNull BookHttpExchange exchange) {
-        log.atFine().log("Parsing headers from request data.");
-        val headers = new Headers();
-        exchange.setRequestHeaders(headers);
-        for (var i = 1; i < requestArray.length; i++) {
-            var line = requestArray[i];
-            var endOfHeadersReached = line.isBlank() || line.isEmpty();
-            if (endOfHeadersReached) return i;
-            var keyValueArray = requestArray[i].split(":");
-            val key = keyValueArray[0];
-            val value = keyValueArray[1];
-            headers.add(key, value);
-            log.atFinest().log("Adding header with key:%s|value:%s", key, value);
-        }
-        log.atFine().log("Parsed %d headers from request data.", headers.size());
-        return NO_BODY_IN_REQUEST;
-    }
-
-    private void parseBody(@NonNull String[] requestArray, @NonNull BookHttpExchange exchange, int start) {
-        log.atFine().log("Parsing request body from request data.");
-        val bodyBuilder = new StringBuilder();
-        for (var i = start; i < requestArray.length; i++) {
-            bodyBuilder.append(requestArray[i]).append(System.lineSeparator());
-        }
-        val body = bodyBuilder.toString();
-        log.atFine().log("Parsed the following body from the request data - %s", body);
-        val bodyStream = new ByteArrayInputStream(body.getBytes());
-        exchange.setRequestBody(bodyStream);
-    }
-
-
 }

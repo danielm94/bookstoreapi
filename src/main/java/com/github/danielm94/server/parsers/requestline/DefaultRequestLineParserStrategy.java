@@ -1,4 +1,4 @@
-package com.github.danielm94.server.util.parsers.requestline;
+package com.github.danielm94.server.parsers.requestline;
 
 import com.github.danielm94.server.HttpMethod;
 import lombok.extern.flogger.Flogger;
@@ -6,14 +6,12 @@ import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 
 @Flogger
-public class RequestLineParser {
+public class DefaultRequestLineParserStrategy implements RequestLineParserStrategy {
     public static final String SPLIT_USING_WHITESPACE_REGEX_PATTERN = "\\s";
     public static final int NUMBER_OF_COMPONENTS_IN_REQUEST_LINE = 3;
 
-    private RequestLineParser() {
-    }
-
-    public static RequestLine parseRequestLine(String requestLineString) {
+    @Override
+    public RequestLine parseRequestLine(String requestLineString) {
         if (StringUtils.isBlank(requestLineString)) {
             log.atWarning()
                .log("Could not parse request line as it was null/empty/blank.");

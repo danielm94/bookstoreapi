@@ -1,4 +1,4 @@
-package com.github.danielm94.server.util.parsers.requestline;
+package com.github.danielm94.server.parsers.requestline;
 
 import com.github.danielm94.server.HttpMethod;
 import lombok.Data;
