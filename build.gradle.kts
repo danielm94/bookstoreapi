@@ -23,6 +23,8 @@ dependencies {
     implementation("com.google.flogger:flogger:0.8")
 
     implementation("org.apache.commons:commons-lang3:3.14.0")
+    implementation("commons-io:commons-io:2.15.1")
+
 
     implementation("com.mysql:mysql-connector-j:8.2.0")
 
