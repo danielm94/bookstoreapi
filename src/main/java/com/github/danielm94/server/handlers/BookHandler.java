@@ -4,13 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.danielm94.server.HttpMethod;
 import com.github.danielm94.server.domain.Book;
 import com.github.danielm94.server.domain.BookDTO;
-import com.github.danielm94.server.util.io.IOUtil;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import lombok.SneakyThrows;
 import lombok.val;
+import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -25,7 +26,7 @@ public class BookHandler implements HttpHandler {
             if (!contentType.equals("application/json")) {
                 new FailureHandler(400, "You fucking dumb dumb JSON only lmao").handle(exchange);
             }
-            val json = IOUtil.parseInputStreamToText(exchange.getRequestBody());
+            val json = IOUtils.toString(exchange.getRequestBody(), StandardCharsets.UTF_8);
 
             val objectMapper = new ObjectMapper();
 
