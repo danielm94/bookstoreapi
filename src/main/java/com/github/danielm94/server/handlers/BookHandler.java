@@ -7,6 +7,7 @@ import com.github.danielm94.server.domain.BookDTO;
 import com.github.danielm94.server.util.io.IOUtil;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import lombok.SneakyThrows;
 import lombok.val;
 
 import java.io.IOException;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class BookHandler implements HttpHandler {
+    @SneakyThrows
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         val httpMethod = HttpMethod.getHttpMethodFromStringValue(exchange.getRequestMethod());
