@@ -11,21 +11,18 @@ public class DefaultRequestLineParserStrategy implements RequestLineParserStrate
     public static final int NUMBER_OF_COMPONENTS_IN_REQUEST_LINE = 3;
 
     @Override
-    public RequestLine parseRequestLine(String requestLineString) {
+    public RequestLine parseRequestLine(String requestLineString) throws RequestLineParsingException {
         if (StringUtils.isBlank(requestLineString)) {
-            log.atWarning()
-               .log("Could not parse request line as it was null/empty/blank.");
-            return null;
+            throw new RequestLineParsingException("Could not parse request line as it was null/empty/blank.", null);
         }
         val requestLine = new RequestLine();
 
         val requestLineValues = requestLineString.split(SPLIT_USING_WHITESPACE_REGEX_PATTERN);
 
         if (requestLineValues.length < NUMBER_OF_COMPONENTS_IN_REQUEST_LINE) {
-            log.atWarning()
-               .log("The request line sent by the client did not include all %s expected components. " +
-                       "Request line: %s", NUMBER_OF_COMPONENTS_IN_REQUEST_LINE, requestLineString);
-            return null;
+            val message = String.format("The request line sent by the client did not include all %s expected components. " +
+                    "Request line: %s", NUMBER_OF_COMPONENTS_IN_REQUEST_LINE, requestLineString);
+            throw new RequestLineParsingException(message);
         }
 
         val requestMethodString = requestLineValues[0];
