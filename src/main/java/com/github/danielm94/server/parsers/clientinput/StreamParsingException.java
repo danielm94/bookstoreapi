@@ -1,4 +1,4 @@
-package com.github.danielm94.server.util.io;
+package com.github.danielm94.server.parsers.clientinput;
 
 public class StreamParsingException extends Exception {
     public StreamParsingException(String message) {

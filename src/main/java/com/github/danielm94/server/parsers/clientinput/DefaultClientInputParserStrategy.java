@@ -1,7 +1,6 @@
 package com.github.danielm94.server.parsers.clientinput;
 
 import com.github.danielm94.server.util.RequestHeaders;
-import com.github.danielm94.server.util.io.StreamParsingException;
 import lombok.extern.flogger.Flogger;
 import lombok.val;
 
