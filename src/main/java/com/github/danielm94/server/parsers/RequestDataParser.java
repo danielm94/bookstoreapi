@@ -73,33 +73,47 @@ public class RequestDataParser {
             throw new StreamParsingException("Could not parse InputStream into a String as it was null.");
         }
 
-        StringBuilder stringBuilder = new StringBuilder();
-        boolean contentLengthFound = false;
+        val stringBuilder = new StringBuilder();
+        var contentLengthFound = false;
         val contentLengthHeaderKey = RequestHeaders.CONTENT_LENGTH.getHeaderKey();
-        int contentLength = 0;
+        var contentLength = 0;
+        val inputStreamReader = new InputStreamReader(stream, StandardCharsets.UTF_8);
+        val bufferedReader = new BufferedReader(inputStreamReader);
 
-        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                if (line.startsWith(contentLengthHeaderKey)) {
-                    contentLengthFound = true;
-                    contentLength = Integer.parseInt(line.substring(contentLengthHeaderKey.length() + 1).trim());
-                }
 
-                if (line.isEmpty()) {
-                    stringBuilder.append(System.lineSeparator());
-                    if (contentLengthFound) {
-                        for (int i = 0; i < contentLength; i++) {
+        String line;
+        while (true) {
+            try {
+                if ((line = bufferedReader.readLine()) == null) break;
+            } catch (IOException e) {
+                val message = stringBuilder.toString().isEmpty() ?
+                        "IOException occurred while reading a line from the buffered reader. No characters were parsed," :
+                        String.format("IOException occurred while reading a line from the buffered reader. " +
+                                "Could only read the input stream up to this point: \n%s", stringBuilder);
+                throw new StreamParsingException(message, e);
+            }
+
+            if (!contentLengthFound && line.startsWith(contentLengthHeaderKey)) {
+                contentLengthFound = true;
+                contentLength = Integer.parseInt(line.substring(contentLengthHeaderKey.length() + 1).trim());
+            }
+
+            if (line.isEmpty()) {
+                stringBuilder.append(System.lineSeparator());
+                if (contentLengthFound) {
+                    for (int i = 0; i < contentLength; i++) {
+                        try {
                             stringBuilder.append((char) bufferedReader.read());
+                        } catch (IOException e) {
+                            val message = String.format("IOException occurred while reading a character from the buffered reader. " +
+                                    "Could only read the input stream up to this point: \n%s", stringBuilder);
+                            throw new StreamParsingException(message, e);
                         }
                     }
-                    break;
                 }
-
-                stringBuilder.append(line).append(System.lineSeparator());
+                break;
             }
-        } catch (IOException e) {
-            throw new StreamParsingException("IOException occurred while reading from the InputStream.", e);
+            stringBuilder.append(line).append(System.lineSeparator());
         }
 
         String result = stringBuilder.toString();
@@ -107,12 +121,14 @@ public class RequestDataParser {
         return result;
     }
 
-    public BookHttpExchange getBookHttpExchangeFromClientSocket(@NonNull Socket clientSocket) throws IOException {
+    public BookHttpExchange getBookHttpExchangeFromClientSocket(@NonNull Socket clientSocket) {
         log.atFine().log("Processing new client request from socket: %s", clientSocket);
 
         val exchange = new BookHttpExchange();
         try {
             exchange.setResponseBody(clientSocket.getOutputStream());
+            log.atFine()
+               .log("Successfully set the response body of the exchange to the client socket's output stream.");
         } catch (IOException e) {
             log.atWarning()
                .withCause(e)
@@ -124,6 +140,7 @@ public class RequestDataParser {
         InputStream clientInputStream;
         try {
             clientInputStream = getClientInputStream(clientSocket);
+            log.atFine().log("Successfully extracted input stream from client socket.");
         } catch (InputStreamRetrievalException e) {
             log.atWarning()
                .withCause(e)
@@ -135,6 +152,7 @@ public class RequestDataParser {
         String requestString;
         try {
             requestString = parseInputStreamToText(clientInputStream);
+            log.atFine().log("Parsed the following String from the client socket input stream:\n%s", requestString);
         } catch (StreamParsingException e) {
             log.atWarning()
                .withCause(e)
@@ -143,7 +161,6 @@ public class RequestDataParser {
                     "Server failed to parse input stream from client request.");
         }
 
-        log.atInfo().log("Result String: \n%s", requestString);
         val requestArray = requestString.split(NEW_LINE_REGEX_PATTERN);
 
         if (requestArray.length == 0) {
@@ -158,6 +175,7 @@ public class RequestDataParser {
         RequestLine requestLine;
         try {
             requestLine = requestLineParser.parseRequestLine(requestLineString);
+            log.atFine().log("Successfully parsed the request line.");
         } catch (RequestLineParsingException e) {
             log.atWarning()
                .withCause(e)
@@ -188,9 +206,8 @@ public class RequestDataParser {
         val headers = headerParser.parseHeaders(requestArray);
         exchange.setRequestHeaders(headers);
         val contentLengthString = headers.getFirst(RequestHeaders.CONTENT_LENGTH.getHeaderKey());
-        val contentLength = Integer.parseInt(contentLengthString.trim());
 
-        if (contentLength > 0) {
+        if (contentLengthString != null) {
             val requestBody = bodyParser.parseBody(requestArray);
             exchange.setRequestBody(requestBody);
         }
