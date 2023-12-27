@@ -1,9 +1,12 @@
 package com.github.danielm94.server;
 
 import com.github.danielm94.server.context.BookContext;
+import com.github.danielm94.server.parsers.RequestDataParser;
 import com.github.danielm94.server.parsers.body.DefaultBodyParserStrategy;
+import com.github.danielm94.server.parsers.clientinput.DefaultClientInputParserStrategy;
 import com.github.danielm94.server.parsers.headers.DefaultHeaderParserStrategy;
 import com.github.danielm94.server.parsers.requestline.DefaultRequestLineParserStrategy;
+import com.github.danielm94.server.processors.RequestProcessor;
 import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -11,8 +14,6 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.flogger.Flogger;
 import lombok.val;
-import com.github.danielm94.server.processors.RequestProcessor;
-import com.github.danielm94.server.parsers.RequestDataParser;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -52,6 +53,7 @@ public class BookServer extends HttpServer {
             val clientSocket = socket.accept();
             log.atFine().log("Accepted new client socket...");
             val parser = new RequestDataParser(contextMap,
+                    new DefaultClientInputParserStrategy(),
                     new DefaultRequestLineParserStrategy(),
                     new DefaultHeaderParserStrategy(),
                     new DefaultBodyParserStrategy());
