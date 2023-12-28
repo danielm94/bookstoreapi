@@ -152,7 +152,7 @@ public class RequestDataParser {
 
         val headers = headerParser.parseHeaders(requestArray);
         exchange.setRequestHeaders(headers);
-        val contentLengthString = headers.getFirst(RequestHeaders.CONTENT_LENGTH.getHeaderKey());
+        val contentLengthString = headers.getFirst(RequestHeaders.CONTENT_LENGTH.toString());
 
         if (contentLengthString != null) {
             val requestBody = bodyParser.parseBody(requestArray);
