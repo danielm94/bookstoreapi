@@ -1,5 +1,6 @@
 package com.github.danielm94.server.exchange;
 
+import com.github.danielm94.server.requestdata.headers.HttpHeader;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpExchange;
@@ -34,6 +35,13 @@ public class BookHttpExchange extends HttpExchange {
     private InputStream requestBody;
     private OutputStream responseBody;
     private HttpPrincipal principal;
+
+    private void addContentLengthHeader(long responseLength) {
+        responseLength = Math.max(responseLength, 0);
+        val key = HttpHeader.CONTENT_LENGTH.toString();
+        val value = Long.toString(responseLength);
+        responseHeaders.add(key, value);
+    }
 
     @Override
     public Headers getRequestHeaders() {
@@ -78,26 +86,22 @@ public class BookHttpExchange extends HttpExchange {
     }
 
     @Override
-    @SneakyThrows(IOException.class)
-    public void sendResponseHeaders(int rCode, long responseLength) {
+    public void sendResponseHeaders(int rCode, long responseLength) throws IOException {
         this.responseCode = rCode;
-        val headerBuilder = new StringBuilder();
+        addContentLengthHeader(responseLength);
 
-        headerBuilder.append(protocol).append(" ").append(rCode).append("\r\n");
+        val headerBuilder = new StringBuilder();
+        headerBuilder.append(protocol).append(" ").append(rCode).append(System.lineSeparator());
 
         for (val entry : responseHeaders.entrySet()) {
             for (val value : entry.getValue()) {
-                headerBuilder.append(entry.getKey()).append(": ").append(value).append("\r\n");
+                headerBuilder.append(entry.getKey()).append(": ").append(value).append(System.lineSeparator());
             }
         }
 
-        if (responseLength >= 0) {
-            headerBuilder.append("Content-Length: ").append(responseLength).append("\r\n");
-        }
+        headerBuilder.append(System.lineSeparator());
 
-        headerBuilder.append("\r\n");
-
-        if (responseBody != null) {
+        if (responseBody != null && responseLength >= 0) {
             responseBody.write(headerBuilder.toString().getBytes(StandardCharsets.UTF_8));
             responseBody.flush();
         }
