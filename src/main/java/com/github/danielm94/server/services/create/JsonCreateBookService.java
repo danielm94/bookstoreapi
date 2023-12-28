@@ -7,7 +7,7 @@ import com.github.danielm94.database.schemas.bookstoreapi.DatabaseTables;
 import com.github.danielm94.server.domain.Book;
 import com.github.danielm94.server.domain.BookDTO;
 import com.github.danielm94.server.handlers.FailureHandler;
-import com.github.danielm94.server.util.RequestHeaders;
+import com.github.danielm94.server.requestdata.headers.RequestHeaders;
 import com.sun.net.httpserver.HttpExchange;
 import lombok.SneakyThrows;
 import lombok.val;

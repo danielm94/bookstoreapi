@@ -11,7 +11,7 @@ import com.github.danielm94.server.parsers.headers.HeaderParserStrategy;
 import com.github.danielm94.server.parsers.requestline.RequestLine;
 import com.github.danielm94.server.parsers.requestline.RequestLineParserStrategy;
 import com.github.danielm94.server.parsers.requestline.RequestLineParsingException;
-import com.github.danielm94.server.util.RequestHeaders;
+import com.github.danielm94.server.requestdata.headers.RequestHeaders;
 import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpHandler;
 import lombok.AllArgsConstructor;
