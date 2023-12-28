@@ -24,6 +24,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 import static com.github.danielm94.database.migration.DatabaseMigrationUtil.*;
+import static com.github.danielm94.server.exchange.Attributes.BOOK_ID;
 
 public class Main {
     public static final int SERVER_PORT = 8000;
@@ -39,8 +40,8 @@ public class Main {
     }
 
     private static BookServer initializeAndConfigureServer() {
-        var server = new BookServer();
-        var address = new InetSocketAddress(InetAddress.getLoopbackAddress(), SERVER_PORT);
+        val server = new BookServer();
+        val address = new InetSocketAddress(InetAddress.getLoopbackAddress(), SERVER_PORT);
         server.bind(address, 0);
         server.setExecutor(new BookServerExecutor());
 
@@ -50,7 +51,8 @@ public class Main {
             HttpHandler handler;
             try {
                 UUID bookUUID = UUID.fromString(bookId);
-                handler = new BookHandler(bookUUID);
+                handler = new BookHandler();
+                context.getAttributes().put(BOOK_ID.toString(), bookUUID);
             } catch (IllegalArgumentException e) {
                 handler = new SimpleResponseHandler(HttpURLConnection.HTTP_BAD_REQUEST, bookId + " is not a valid UUID.");
             }
@@ -58,7 +60,10 @@ public class Main {
             return context;
         });
 
-        var debugContext = server.createContext(DEBUG_ENDPOINT);
+        val bookContext = server.createContext(BOOK_STORE_API_ENDPOINT);
+        bookContext.setHandler(new BookHandler());
+
+        val debugContext = server.createContext(DEBUG_ENDPOINT);
         debugContext.setHandler(new RequestHandler());
 
         return server;
