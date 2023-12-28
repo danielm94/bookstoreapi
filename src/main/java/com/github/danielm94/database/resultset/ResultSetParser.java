@@ -43,7 +43,7 @@ public class ResultSetParser {
             rowMap = new HashMap<>();
         }
 
-        log.atFine().log("Successfully parsed result set to a list of maps.");
+        log.atFine().log("Successfully parsed result set to a list of maps. Number of rows: %d", resultTable.size());
         return resultTable;
     }
 
