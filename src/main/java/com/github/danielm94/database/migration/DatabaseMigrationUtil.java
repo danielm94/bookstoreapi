@@ -44,8 +44,8 @@ public class DatabaseMigrationUtil {
     public static boolean tableExists(@NonNull DatabaseSchemas schema, @NonNull DatabaseTables table) throws SQLException, InterruptedException {
         val connection = ConnectionPoolManager.getInstance().getConnection();
         val statement = connection.prepareStatement(CHECK_IF_TABLE_EXISTS_QUERY);
-        statement.setString(1, schema.getSchemaName());
-        statement.setString(2, table.getTableName());
+        statement.setString(1, schema.toString());
+        statement.setString(2, table.toString());
         val result = statement.executeQuery();
         val resultMapList = ResultSetParser.parseResultSetToListOfMaps(result);
         ConnectionPoolManager.getInstance().returnConnection(connection);
@@ -55,18 +55,16 @@ public class DatabaseMigrationUtil {
     public static void createBooksTable() throws SQLException, InterruptedException {
         val connection = ConnectionPoolManager.getInstance().getConnection();
         val statement = connection.createStatement();
-        var query = new StringBuilder()
-                .append("CREATE TABLE IF NOT EXISTS ").append(DatabaseSchemas.BOOKSTOREAPI.getSchemaName())
-                .append(".").append(DatabaseTables.BOOKS.getTableName()).append("(")
-                .append(ID.getColumnName()).append(" CHAR(36) NOT NULL, ")
-                .append(BOOK_NAME.getColumnName()).append(" VARCHAR(255) NOT NULL, ")
-                .append(AUTHOR.getColumnName()).append(" VARCHAR(255) NOT NULL, ")
-                .append(ISBN.getColumnName()).append(" VARCHAR(20), ")
-                .append(PRICE.getColumnName()).append(" DECIMAL(10, 2) NOT NULL, ")
-                .append(DATE_ADDED.getColumnName()).append(" DATETIME NOT NULL, ")
-                .append(DATE_UPDATED.getColumnName()).append(" DATETIME NOT NULL, ")
-                .append("PRIMARY KEY (").append(ID.getColumnName()).append("));")
-                .toString();
+        var query = "CREATE TABLE IF NOT EXISTS " + DatabaseSchemas.BOOKSTOREAPI.getSchemaName() +
+                "." + DatabaseTables.BOOKS + "(" +
+                ID + " CHAR(36) NOT NULL, " +
+                BOOK_NAME + " VARCHAR(255) NOT NULL, " +
+                AUTHOR + " VARCHAR(255) NOT NULL, " +
+                ISBN + " VARCHAR(20), " +
+                PRICE + " DECIMAL(10, 2) NOT NULL, " +
+                DATE_ADDED + " DATETIME NOT NULL, " +
+                DATE_UPDATED + " DATETIME NOT NULL, " +
+                "PRIMARY KEY (" + ID + "));";
         statement.execute(query);
         ConnectionPoolManager.getInstance().returnConnection(connection);
     }
