@@ -17,7 +17,7 @@ public class DefaultHeaderParserStrategy implements HeaderParserStrategy {
             var keyValueArray = line.split(":");
             if (lineIsAHeader(keyValueArray)) {
                 val key = keyValueArray[0];
-                val value = keyValueArray[1];
+                val value = keyValueArray[1].trim();
                 headers.add(key, value);
                 log.atFinest().log("Adding header with key:%s|value:%s", key, value);
             }
