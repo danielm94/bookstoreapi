@@ -15,6 +15,7 @@ import static com.github.danielm94.ConnectionPoolManager.getInstance;
 import static com.github.danielm94.database.schemas.DatabaseSchemas.*;
 import static com.github.danielm94.database.schemas.bookstoreapi.DatabaseTables.*;
 import static com.github.danielm94.database.schemas.bookstoreapi.books.BooksColumn.*;
+import static java.lang.String.format;
 
 @Flogger
 public class BookRepository {
@@ -22,6 +23,8 @@ public class BookRepository {
     public static final DatabaseTables TABLE = BOOKS;
     public static final String SELECT_BOOK_BY_ID_FORMATTABLE_QUERY = "select * from %s.%s where %s = '%s';";
     public static final String CREATE_NEW_BOOK_FORMATTABLE_QUERY = "insert into %s.%s(%s,%s,%s,%s,%s,%s,%s) values('%s','%s','%s','%s','%s','%s','%s');";
+    public static final String GET_ALL_BOOKS_FORMATTABLE_QUERY = "select * from %s.%s;";
+    public static final String GET_NUMBER_OF_BOOKS_WITH_ID_FORMATTABLE_QUERY = "select count(*) from %s.%s where %s = '%s';";
 
     private BookRepository() {
     }
@@ -31,7 +34,7 @@ public class BookRepository {
         val connection = getInstance().getConnection();
 
         val statement = connection.createStatement();
-        val query = String.format(CREATE_NEW_BOOK_FORMATTABLE_QUERY,
+        val query = format(CREATE_NEW_BOOK_FORMATTABLE_QUERY,
                 SCHEMA, TABLE,
                 ID, BOOK_NAME, AUTHOR, ISBN, PRICE, DATE_ADDED, DATE_UPDATED,
                 book.getId(), book.getBookName(), book.getAuthor(), book.getIsbn(), book.getPrice(), book.getDateAdded(), book.getDateUpdated());
@@ -49,7 +52,7 @@ public class BookRepository {
         val connection = getInstance().getConnection();
 
         val statement = connection.createStatement();
-        val query = String.format(SELECT_BOOK_BY_ID_FORMATTABLE_QUERY, SCHEMA, TABLE, ID, uuid);
+        val query = format(SELECT_BOOK_BY_ID_FORMATTABLE_QUERY, SCHEMA, TABLE, ID, uuid);
 
         log.atFine().log("Executing query: %s", query);
         val resultSet = statement.executeQuery(query);
@@ -64,7 +67,22 @@ public class BookRepository {
         val connection = getInstance().getConnection();
 
         val statement = connection.createStatement();
-        val query = String.format("select * from %s.%s;", SCHEMA, TABLE);
+        val query = format(GET_ALL_BOOKS_FORMATTABLE_QUERY, SCHEMA, TABLE);
+
+        log.atFine().log("Executing query: %s", query);
+        val resultSet = statement.executeQuery(query);
+        log.atFine().log("Query has been successfully executed.");
+
+        getInstance().returnConnection(connection);
+        return resultSet;
+    }
+
+    public static ResultSet getNumberOfBooksWithId(UUID uuid) throws SQLException, InterruptedException {
+        log.atFine().log("Getting the number of books");
+        val connection = getInstance().getConnection();
+
+        val statement = connection.createStatement();
+        val query = format(GET_NUMBER_OF_BOOKS_WITH_ID_FORMATTABLE_QUERY, SCHEMA, TABLE, ID, uuid);
 
         log.atFine().log("Executing query: %s", query);
         val resultSet = statement.executeQuery(query);
