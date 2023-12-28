@@ -1,60 +1,64 @@
 package com.github.danielm94.server.services.create;
 
-import com.github.danielm94.ConnectionPoolManager;
-import com.github.danielm94.database.schemas.DatabaseSchemas;
-import com.github.danielm94.database.schemas.bookstoreapi.DatabaseTables;
-import com.github.danielm94.server.domain.book.Book;
+import com.github.danielm94.database.repository.BookRepository;
+import com.github.danielm94.server.domain.book.BookDTO;
+import com.github.danielm94.server.domain.book.mappers.BookMapper;
 import com.github.danielm94.server.domain.book.parsers.JsonBookDTOParser;
-import com.github.danielm94.server.handlers.FailureHandler;
-import com.github.danielm94.server.requestdata.headers.RequestHeaders;
+import com.github.danielm94.server.handlers.SimpleResponseHandler;
 import com.sun.net.httpserver.HttpExchange;
 import lombok.NonNull;
-import lombok.SneakyThrows;
+import lombok.extern.flogger.Flogger;
 import lombok.val;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
+import java.io.IOException;
+import java.sql.SQLException;
 
-import static com.github.danielm94.database.schemas.bookstoreapi.books.BooksColumn.*;
-import static java.net.HttpURLConnection.*;
+import static java.net.HttpURLConnection.HTTP_CREATED;
+import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
 
+@Flogger
 public class JsonCreateBookService implements CreateBookService {
-    @SneakyThrows
+
     @Override
     public void createBook(@NonNull HttpExchange exchange) {
-        val headers = exchange.getRequestHeaders();
-        val contentType = headers.getFirst(RequestHeaders.CONTENT_TYPE.toString());
-        if (!contentType.equals("application/json")) {
-            new FailureHandler(HTTP_BAD_REQUEST, "You fucking dumb dumb JSON only lmao").handle(exchange);
+        val dtoParser = new JsonBookDTOParser();
+
+        BookDTO bookDTO;
+        try {
+            bookDTO = dtoParser.parseRequestBodyToBookDTO(exchange.getRequestBody());
+        } catch (IOException e) {
+            sendResponseToClient(exchange, HTTP_INTERNAL_ERROR, "Server failed to parse request body into a book suitable for creation operations.");
             return;
         }
 
-        val dtoParser = new JsonBookDTOParser();
-        val bookDTO = dtoParser.parseRequestBodyToBookDTO(exchange.getRequestBody());
-        val now = LocalDateTime.now();
-        val book = Book.builder()
-                       .id(UUID.randomUUID())
-                       .bookName(bookDTO.getBookName())
-                       .author(bookDTO.getBookName())
-                       .isbn(bookDTO.getIsbn())
-                       .price(bookDTO.getPrice())
-                       .dateAdded(now)
-                       .dateUpdated(now)
-                       .build();
-        val connection = ConnectionPoolManager.getInstance().getConnection();
-
-        val statement = connection.createStatement();
-        val query = String.format("insert into %s.%s(%s,%s,%s,%s,%s,%s,%s) values('%s','%s','%s','%s','%s','%s','%s')",
-                DatabaseSchemas.BOOKSTOREAPI, DatabaseTables.BOOKS,
-                ID, BOOK_NAME, AUTHOR, ISBN, PRICE, DATE_ADDED, DATE_UPDATED,
-                book.getId(), book.getBookName(), book.getAuthor(), book.getIsbn(), book.getPrice(), book.getDateAdded(), book.getDateUpdated());
-        val rowsAffected = statement.executeUpdate(query);
-        if (rowsAffected > 0) {
-            exchange.sendResponseHeaders(HTTP_CREATED, 0);
-        } else {
-            new FailureHandler(HTTP_INTERNAL_ERROR, "Failed to create book resource in database.");
-
+        val book = BookMapper.mapFromDTO(bookDTO);
+        boolean bookWasCreated;
+        try {
+            bookWasCreated = BookRepository.createBook(book);
+        } catch (SQLException e) {
+            sendResponseToClient(exchange, HTTP_INTERNAL_ERROR,
+                    "Server failed to create a new book in the database as an error occurred while performing database operations.");
+            return;
+        } catch (InterruptedException e) {
+            sendResponseToClient(exchange, HTTP_INTERNAL_ERROR,
+                    "Server failed to create a new book in the database as an error occurred when managing database connections.");
+            return;
         }
-        ConnectionPoolManager.getInstance().returnConnection(connection);
+
+        if (bookWasCreated) {
+            sendResponseToClient(exchange, HTTP_CREATED, null);
+        } else {
+            sendResponseToClient(exchange, HTTP_INTERNAL_ERROR, "Failed to create book resource in database.");
+        }
+    }
+
+    private void sendResponseToClient(HttpExchange exchange, int responseStatus, String message) {
+        try {
+            new SimpleResponseHandler(responseStatus, message).handle(exchange);
+        } catch (IOException e) {
+            log.atSevere()
+               .withCause(e)
+               .log("Server failed to send response to the client.\nResponse Status: %d\nResponse Message: %s", responseStatus, message);
+        }
     }
 }
