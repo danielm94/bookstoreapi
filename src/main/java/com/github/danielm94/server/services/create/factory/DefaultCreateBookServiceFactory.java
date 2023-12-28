@@ -3,10 +3,11 @@ package com.github.danielm94.server.services.create.factory;
 import com.github.danielm94.server.requestdata.content.ContentType;
 import com.github.danielm94.server.services.create.CreateBookService;
 import com.github.danielm94.server.services.create.JsonCreateBookService;
+import com.github.danielm94.server.services.exceptions.UnsupportedContentTypeException;
 import lombok.NonNull;
 import lombok.val;
 
-public class ContentTypeCreateBookServiceFactory implements CreateBookServiceFactory {
+public class DefaultCreateBookServiceFactory implements CreateBookServiceFactory {
     @Override
     public CreateBookService getServiceForContentType(@NonNull ContentType contentType) throws UnsupportedContentTypeException {
         switch (contentType) {
