@@ -20,11 +20,11 @@ public class JsonCreateBookService implements CreateBookService {
 
     @Override
     public void createBook(@NonNull HttpExchange exchange) {
-        val dtoParser = new JsonBookDTOMapper();
+        val dtoMapper = new JsonBookDTOMapper();
 
         BookDTO bookDTO;
         try {
-            bookDTO = dtoParser.parseRequestBodyToBookDTO(exchange.getRequestBody());
+            bookDTO = dtoMapper.parseRequestBodyToBookDTO(exchange.getRequestBody());
         } catch (IOException e) {
             sendResponseToClient(exchange, HTTP_INTERNAL_ERROR, "Server failed to parse request body into a book suitable for creation operations.");
             return;
