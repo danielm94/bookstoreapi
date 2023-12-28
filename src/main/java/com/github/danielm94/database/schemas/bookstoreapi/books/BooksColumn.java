@@ -15,4 +15,9 @@ public enum BooksColumn {
     DATE_UPDATED("dateUpdated");
 
     private final String columnName;
+
+    @Override
+    public String toString() {
+        return columnName;
+    }
 }

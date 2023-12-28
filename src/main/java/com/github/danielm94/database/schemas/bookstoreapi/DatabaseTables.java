@@ -10,5 +10,8 @@ public enum DatabaseTables {
 
     private final String tableName;
 
-
+    @Override
+    public String toString() {
+        return tableName;
+    }
 }

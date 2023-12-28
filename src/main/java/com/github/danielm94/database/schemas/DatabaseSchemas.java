@@ -12,4 +12,8 @@ public enum DatabaseSchemas {
         this.schemaName = schemaName;
     }
 
+    @Override
+    public String toString() {
+        return schemaName;
+    }
 }
