@@ -20,7 +20,7 @@ public class DefaultClientInputParserStrategy implements ClientInputParserStrate
 
         val stringBuilder = new StringBuilder();
         var contentLengthFound = false;
-        val contentLengthHeaderKey = RequestHeaders.CONTENT_LENGTH.getHeaderKey();
+        val contentLengthHeaderKey = RequestHeaders.CONTENT_LENGTH.toString();
         var contentLength = 0;
         val inputStreamReader = new InputStreamReader(stream, charSet);
         val bufferedReader = new BufferedReader(inputStreamReader);
