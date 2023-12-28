@@ -14,6 +14,8 @@ import java.util.Map;
 @Flogger
 public class ResultSetParser {
 
+    public static final int FIRST_COLUMN_INDEX = 1;
+
     private ResultSetParser() {
     }
 
@@ -43,5 +45,19 @@ public class ResultSetParser {
 
         log.atFine().log("Successfully parsed result set to a list of maps.");
         return resultTable;
+    }
+
+    public static Integer parseResultSetToInteger(@NonNull ResultSet resultSet) throws SQLException {
+        log.atFine().log("Parsing result set to an integer");
+        val integer = resultSet.getInt(FIRST_COLUMN_INDEX);
+        log.atFine().log("Found integer value %s from result set", integer);
+        return integer;
+    }
+
+    public static String parseResultToString(@NonNull ResultSet resultSet) throws SQLException {
+        log.atFine().log("Parsing result set to an string");
+        val string = resultSet.getString(FIRST_COLUMN_INDEX);
+        log.atFine().log("Found string value %s from result set", string);
+        return string;
     }
 }
