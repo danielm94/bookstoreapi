@@ -26,7 +26,7 @@ public class DatabaseMigrationUtil {
     public static void createDatabaseSchema(@NonNull DatabaseSchemas schema) throws SQLException, InterruptedException {
         val connection = ConnectionPoolManager.getInstance().getConnection();
         val statement = connection.createStatement();
-        val query = String.format(CREATE_SCHEMA_QUERY_FORMATABLE_STRING, schema.getSchemaName());
+        val query = String.format(CREATE_SCHEMA_QUERY_FORMATABLE_STRING, schema);
         statement.execute(query);
         ConnectionPoolManager.getInstance().returnConnection(connection);
     }
@@ -34,7 +34,7 @@ public class DatabaseMigrationUtil {
     public static boolean schemaExists(@NonNull DatabaseSchemas schema) throws SQLException, InterruptedException {
         val connection = ConnectionPoolManager.getInstance().getConnection();
         val statement = connection.prepareStatement(CHECK_IF_SCHEMA_EXISTS_QUERY);
-        statement.setString(1, schema.getSchemaName());
+        statement.setString(1, schema.toString());
         val result = statement.executeQuery();
         val resultMapList = ResultSetParser.parseResultSetToListOfMaps(result);
         ConnectionPoolManager.getInstance().returnConnection(connection);
@@ -55,7 +55,7 @@ public class DatabaseMigrationUtil {
     public static void createBooksTable() throws SQLException, InterruptedException {
         val connection = ConnectionPoolManager.getInstance().getConnection();
         val statement = connection.createStatement();
-        var query = "CREATE TABLE IF NOT EXISTS " + DatabaseSchemas.BOOKSTOREAPI.getSchemaName() +
+        var query = "CREATE TABLE IF NOT EXISTS " + DatabaseSchemas.BOOKSTOREAPI +
                 "." + DatabaseTables.BOOKS + "(" +
                 ID + " CHAR(36) NOT NULL, " +
                 BOOK_NAME + " VARCHAR(255) NOT NULL, " +
