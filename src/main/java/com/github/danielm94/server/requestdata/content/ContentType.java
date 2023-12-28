@@ -11,7 +11,8 @@ import java.util.Map;
 @Getter
 @AllArgsConstructor
 public enum ContentType {
-    APPLICATION_JSON("application/json");
+    APPLICATION_JSON("application/json"),
+    TEXT_PLAIN("text/plain");
     @Getter(AccessLevel.NONE)
     private static final Map<String, ContentType> lookupMap;
 
