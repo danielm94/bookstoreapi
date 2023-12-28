@@ -101,7 +101,7 @@ public class BookHttpExchange extends HttpExchange {
 
         headerBuilder.append(System.lineSeparator());
 
-        if (responseBody != null && responseLength >= 0) {
+        if (responseBody != null) {
             responseBody.write(headerBuilder.toString().getBytes(StandardCharsets.UTF_8));
             responseBody.flush();
         }
