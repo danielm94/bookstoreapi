@@ -4,10 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.github.danielm94.server.domain.Book;
 import com.github.danielm94.ConnectionPoolManager;
 import com.github.danielm94.config.DefaultPoolConfiguration;
 import com.github.danielm94.credentials.PropertyFileConnectionCredentials;
+import com.github.danielm94.server.domain.book.Book;
 import lombok.val;
 import org.junit.jupiter.api.Test;
 
@@ -16,7 +16,10 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.UUID;
 
 class ResultSetParserTest {
     @Test

@@ -1,4 +1,4 @@
-package com.github.danielm94.server.domain;
+package com.github.danielm94.server.domain.book;
 
 import lombok.Builder;
 import lombok.Data;
