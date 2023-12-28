@@ -3,7 +3,7 @@ package com.github.danielm94.server.services.create;
 import com.github.danielm94.database.repository.BookRepository;
 import com.github.danielm94.server.domain.book.BookDTO;
 import com.github.danielm94.server.domain.book.mappers.BookMapper;
-import com.github.danielm94.server.domain.book.parsers.JsonBookDTOParser;
+import com.github.danielm94.server.domain.book.mappers.JsonBookDTOMapper;
 import com.github.danielm94.server.handlers.SimpleResponseHandler;
 import com.sun.net.httpserver.HttpExchange;
 import lombok.NonNull;
@@ -13,15 +13,14 @@ import lombok.val;
 import java.io.IOException;
 import java.sql.SQLException;
 
-import static java.net.HttpURLConnection.HTTP_CREATED;
-import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
+import static java.net.HttpURLConnection.*;
 
 @Flogger
 public class JsonCreateBookService implements CreateBookService {
 
     @Override
     public void createBook(@NonNull HttpExchange exchange) {
-        val dtoParser = new JsonBookDTOParser();
+        val dtoParser = new JsonBookDTOMapper();
 
         BookDTO bookDTO;
         try {
