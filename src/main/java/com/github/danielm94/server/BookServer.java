@@ -21,9 +21,12 @@ import java.net.ServerSocket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.function.Function;
+import java.util.regex.Pattern;
 
 @Flogger
 public class BookServer extends HttpServer {
+    private final Map<Pattern, Function<Map<String, String>, HttpContext>> dynamicPaths;
     private final Map<String, HttpContext> contextMap;
     private boolean serverIsRunning;
     private ServerSocket socket;
@@ -34,6 +37,7 @@ public class BookServer extends HttpServer {
 
     public BookServer() {
         this.contextMap = new HashMap<>();
+        this.dynamicPaths = new HashMap<>();
     }
 
     @Override
@@ -52,12 +56,12 @@ public class BookServer extends HttpServer {
         while (serverIsRunning) {
             val clientSocket = socket.accept();
             log.atFine().log("Accepted new client socket...");
-            val parser = new RequestDataParser(contextMap,
+            val parser = new RequestDataParser(contextMap, dynamicPaths,
                     new DefaultClientInputParserStrategy(),
                     new DefaultRequestLineParserStrategy(),
                     new DefaultHeaderParserStrategy(),
                     new DefaultBodyParserStrategy());
-            var exchange = parser.getBookHttpExchangeFromClientSocket(clientSocket);
+            var exchange = parser.getHttpExchangeFromClientSocket(clientSocket);
             val requestProcessor = new RequestProcessor(clientSocket, exchange);
             executor.execute(requestProcessor);
         }
@@ -115,4 +119,9 @@ public class BookServer extends HttpServer {
     public InetSocketAddress getAddress() {
         return address;
     }
+
+    public void registerDynamicPath(@NonNull Pattern pattern, @NonNull Function<Map<String, String>, HttpContext> routeFunction) {
+        dynamicPaths.put(pattern, routeFunction);
+    }
+
 }

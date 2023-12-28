@@ -13,6 +13,7 @@ import com.github.danielm94.server.parsers.requestline.RequestLineParserStrategy
 import com.github.danielm94.server.parsers.requestline.RequestLineParsingException;
 import com.github.danielm94.server.requestdata.headers.HttpHeader;
 import com.sun.net.httpserver.HttpContext;
+import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -24,7 +25,10 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.regex.Pattern;
 
 @Flogger
 @AllArgsConstructor
@@ -32,6 +36,7 @@ public class RequestDataParser {
     public static final String NEW_LINE_REGEX_PATTERN = "\r\n|\n";
 
     private final Map<String, HttpContext> contextMap;
+    private final Map<Pattern, Function<Map<String, String>, HttpContext>> dynamicPaths;
     private final ClientInputParserStrategy inputParser;
     private final RequestLineParserStrategy requestLineParser;
     private final HeaderParserStrategy headerParser;
@@ -68,7 +73,7 @@ public class RequestDataParser {
         exchange.getHttpContext().setHandler(handler);
     }
 
-    public BookHttpExchange getBookHttpExchangeFromClientSocket(@NonNull Socket clientSocket) {
+    public HttpExchange getHttpExchangeFromClientSocket(@NonNull Socket clientSocket) {
         log.atFine().log("Processing new client request from socket: %s", clientSocket);
 
         val exchange = new BookHttpExchange();
@@ -139,11 +144,14 @@ public class RequestDataParser {
         exchange.setRequestMethod(requestLine.getHttpMethod().toString());
 
         val path = requestLine.getPath();
-        val context = contextMap.get(path);
+        var context = contextMap.get(path);
         if (context == null) {
-            log.atWarning().log("Server does not support the path: %s", path);
-            return sendOffExchangePrematurely(exchange, HttpURLConnection.HTTP_NOT_FOUND,
-                    "Server does not support the path: " + path);
+            context = searchDynamicPathsForContext(path);
+            if (context == null) {
+                log.atWarning().log("Server does not support the path: %s", path);
+                return sendOffExchangePrematurely(exchange, HttpURLConnection.HTTP_NOT_FOUND,
+                        "Server does not support the path: " + path);
+            }
         }
         exchange.setHttpContext(context);
 
@@ -161,5 +169,19 @@ public class RequestDataParser {
 
         log.atFine().log("Successfully parsed request data from client: %s", clientSocket);
         return exchange;
+    }
+
+    private HttpContext searchDynamicPathsForContext(String path) {
+        for (val entry : dynamicPaths.entrySet()) {
+            val matcher = entry.getKey().matcher(path);
+            if (matcher.find()) {
+                val params = new HashMap<String, String>();
+                if (matcher.groupCount() >= 1) {
+                    params.put("bookId", matcher.group(1));
+                }
+                return entry.getValue().apply(params);
+            }
+        }
+        return null;
     }
 }
