@@ -4,5 +4,5 @@ import com.sun.net.httpserver.HttpExchange;
 import lombok.NonNull;
 
 public interface GetBookService {
-    void getBook(@NonNull HttpExchange exchange);
+    void get(@NonNull HttpExchange exchange);
 }
