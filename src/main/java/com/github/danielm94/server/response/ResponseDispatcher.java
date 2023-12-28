@@ -41,7 +41,7 @@ public class ResponseDispatcher {
         return this;
     }
 
-    public ResponseDispatcher setBody(@NonNull String body) {
+    public ResponseDispatcher setBody(String body) {
         this.body = body;
         return this;
     }
