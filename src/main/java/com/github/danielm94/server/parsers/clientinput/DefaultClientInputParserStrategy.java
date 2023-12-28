@@ -1,6 +1,6 @@
 package com.github.danielm94.server.parsers.clientinput;
 
-import com.github.danielm94.server.requestdata.headers.RequestHeaders;
+import com.github.danielm94.server.requestdata.headers.HttpHeader;
 import lombok.extern.flogger.Flogger;
 import lombok.val;
 
@@ -20,7 +20,7 @@ public class DefaultClientInputParserStrategy implements ClientInputParserStrate
 
         val stringBuilder = new StringBuilder();
         var contentLengthFound = false;
-        val contentLengthHeaderKey = RequestHeaders.CONTENT_LENGTH.toString();
+        val contentLengthHeaderKey = HttpHeader.CONTENT_LENGTH.toString();
         var contentLength = 0;
         val inputStreamReader = new InputStreamReader(stream, charSet);
         val bufferedReader = new BufferedReader(inputStreamReader);

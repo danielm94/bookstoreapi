@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum RequestHeaders {
+public enum HttpHeader {
     CONTENT_LENGTH("Content-Length"),
     CONTENT_TYPE("Content-Type");
 

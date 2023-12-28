@@ -11,7 +11,7 @@ import com.github.danielm94.server.parsers.headers.HeaderParserStrategy;
 import com.github.danielm94.server.parsers.requestline.RequestLine;
 import com.github.danielm94.server.parsers.requestline.RequestLineParserStrategy;
 import com.github.danielm94.server.parsers.requestline.RequestLineParsingException;
-import com.github.danielm94.server.requestdata.headers.RequestHeaders;
+import com.github.danielm94.server.requestdata.headers.HttpHeader;
 import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpHandler;
 import lombok.AllArgsConstructor;
@@ -152,7 +152,7 @@ public class RequestDataParser {
 
         val headers = headerParser.parseHeaders(requestArray);
         exchange.setRequestHeaders(headers);
-        val contentLengthString = headers.getFirst(RequestHeaders.CONTENT_LENGTH.toString());
+        val contentLengthString = headers.getFirst(HttpHeader.CONTENT_LENGTH.toString());
 
         if (contentLengthString != null) {
             val requestBody = bodyParser.parseBody(requestArray);
