@@ -3,7 +3,7 @@ package com.github.danielm94.server.parsers;
 import com.github.danielm94.server.context.BookContext;
 import com.github.danielm94.server.exchange.BookHttpExchange;
 import com.github.danielm94.server.handlers.DoNothingHandler;
-import com.github.danielm94.server.handlers.FailureHandler;
+import com.github.danielm94.server.handlers.SimpleResponseHandler;
 import com.github.danielm94.server.parsers.body.BodyParserStrategy;
 import com.github.danielm94.server.parsers.clientinput.ClientInputParserStrategy;
 import com.github.danielm94.server.parsers.clientinput.StreamParsingException;
@@ -55,7 +55,7 @@ public class RequestDataParser {
         log.atFine()
            .log("Sending off HttpExchange prematurely. Status code: %d, Message: %s, Exchange: %s", statusCode, message, exchange);
 
-        val failureHandler = new FailureHandler(statusCode, message);
+        val failureHandler = new SimpleResponseHandler(statusCode, message);
         setHandler(exchange, failureHandler);
         exchange.setProtocol("HTTP/1.1");
         return exchange;

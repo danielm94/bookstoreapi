@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 
 @Flogger
 @AllArgsConstructor
-public class FailureHandler implements HttpHandler {
+public class SimpleResponseHandler implements HttpHandler {
     private final int statusCode;
     private final String message;
 
