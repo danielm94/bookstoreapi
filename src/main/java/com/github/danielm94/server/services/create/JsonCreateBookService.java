@@ -1,19 +1,17 @@
 package com.github.danielm94.server.services.create;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.danielm94.ConnectionPoolManager;
 import com.github.danielm94.database.schemas.DatabaseSchemas;
 import com.github.danielm94.database.schemas.bookstoreapi.DatabaseTables;
 import com.github.danielm94.server.domain.book.Book;
-import com.github.danielm94.server.domain.book.BookDTO;
+import com.github.danielm94.server.domain.book.parsers.JsonBookDTOParser;
 import com.github.danielm94.server.handlers.FailureHandler;
 import com.github.danielm94.server.requestdata.headers.RequestHeaders;
 import com.sun.net.httpserver.HttpExchange;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
-import org.apache.commons.io.IOUtils;
 
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -23,18 +21,16 @@ import static java.net.HttpURLConnection.*;
 public class JsonCreateBookService implements CreateBookService {
     @SneakyThrows
     @Override
-    public void createBook(HttpExchange exchange) {
+    public void createBook(@NonNull HttpExchange exchange) {
         val headers = exchange.getRequestHeaders();
         val contentType = headers.getFirst(RequestHeaders.CONTENT_TYPE.toString());
         if (!contentType.equals("application/json")) {
             new FailureHandler(HTTP_BAD_REQUEST, "You fucking dumb dumb JSON only lmao").handle(exchange);
             return;
         }
-        val json = IOUtils.toString(exchange.getRequestBody(), StandardCharsets.UTF_8);
 
-        val objectMapper = new ObjectMapper();
-
-        val bookDTO = objectMapper.readValue(json, BookDTO.class);
+        val dtoParser = new JsonBookDTOParser();
+        val bookDTO = dtoParser.parseRequestBodyToBookDTO(exchange.getRequestBody());
         val now = LocalDateTime.now();
         val book = Book.builder()
                        .id(UUID.randomUUID())
