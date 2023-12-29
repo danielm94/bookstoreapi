@@ -13,6 +13,7 @@ public class DefaultHttpMethodBookHandlerFactory implements HttpMethodBookHandle
             case PUT -> new PutBookHandler();
             case POST -> new PostBookHandler();
             case DELETE -> new DeleteBookHandler();
+            case PATCH -> new PatchBookHandler();
             default -> throw new UnsupportedHttpMethodException(method);
         };
     }
