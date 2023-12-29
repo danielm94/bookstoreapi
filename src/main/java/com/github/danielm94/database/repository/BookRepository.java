@@ -26,6 +26,7 @@ public class BookRepository {
     public static final String GET_ALL_BOOKS_FORMATTABLE_QUERY = "select * from %s.%s;";
     public static final String GET_NUMBER_OF_BOOKS_WITH_ID_FORMATTABLE_QUERY = "select count(*) from %s.%s where %s = '%s';";
     public static final String UPDATE_BOOK_FORMATTABLE_QEURY = "UPDATE %s.%s SET %s = ?, %s = ?, %s = ?, %s = ?, %s = ?, %s = ? WHERE %s = ?";
+    public static final String DELETE_BOOK_FORMATTABLE_QUERY = "delete from %s.%s where id = ?;";
 
     private BookRepository() {
     }
@@ -129,5 +130,19 @@ public class BookRepository {
         log.atFine()
            .log("Successfully executed query to update book with an ID of [%s]. Number of rows affected: %d", id, affectedRows);
         return affectedRows;
+    }
+
+    public static int deleteBook(@NonNull UUID id) throws SQLException, InterruptedException {
+        log.atFine().log("Deleting a book with an id of %s.", id);
+        val connection = getInstance().getConnection();
+
+        val query = String.format(DELETE_BOOK_FORMATTABLE_QUERY, SCHEMA, TABLE);
+        val statement = connection.prepareStatement(query);
+        statement.setString(1, id.toString());
+        val rowsAffected = statement.executeUpdate();
+
+        getInstance().returnConnection(connection);
+        log.atFine().log("Successfully executed query to delete book. Rows affected: %n", rowsAffected);
+        return rowsAffected;
     }
 }
