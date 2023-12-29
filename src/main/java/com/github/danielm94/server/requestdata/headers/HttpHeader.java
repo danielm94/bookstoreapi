@@ -8,7 +8,7 @@ import lombok.Getter;
 public enum HttpHeader {
     CONTENT_LENGTH("Content-Length"),
     CONTENT_TYPE("Content-Type"),
-    CONTENT_LOCATION("Content-Location:");
+    LOCATION("Location:");
 
     private final String headerKey;
 
