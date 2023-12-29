@@ -63,9 +63,7 @@ public class BookHandler implements HttpHandler {
                 val attributes = exchange.getHttpContext().getAttributes();
                 val resourceId = (UUID) attributes.get(BOOK_ID.toString());
                 if (resourceId == null) {
-                    new SimpleResponseHandler(
-                            HTTP_BAD_REQUEST, "You must specify the UUID of the book you wish to update in the URI.")
-                            .handle(exchange);
+                    sendResponse(exchange, HTTP_BAD_REQUEST, "You must specify the UUID of the book you wish to update in the URI.");
                     return;
                 }
 
