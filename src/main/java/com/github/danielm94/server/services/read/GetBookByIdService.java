@@ -3,7 +3,6 @@ package com.github.danielm94.server.services.read;
 import com.github.danielm94.server.domain.book.Book;
 import com.github.danielm94.server.domain.book.serializer.BookSerializationException;
 import com.github.danielm94.server.domain.book.serializer.JsonBookSerializer;
-import com.github.danielm94.server.handlers.SimpleResponseHandler;
 import com.sun.net.httpserver.HttpExchange;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -20,6 +19,7 @@ import static com.github.danielm94.database.repository.BookRepository.*;
 import static com.github.danielm94.database.schemas.DatabaseSchemas.*;
 import static com.github.danielm94.database.schemas.bookstoreapi.DatabaseTables.*;
 import static com.github.danielm94.server.domain.book.mappers.BookMapper.*;
+import static com.github.danielm94.server.handlers.SimpleResponseHandler.sendResponse;
 import static com.github.danielm94.server.requestdata.content.ContentType.*;
 import static com.github.danielm94.server.requestdata.headers.HttpHeader.*;
 import static com.github.danielm94.server.response.ResponseDispatcher.createResponse;
@@ -36,10 +36,10 @@ public class GetBookByIdService implements GetBookService {
         try {
             resultSet = getBook(uuid);
         } catch (SQLException e) {
-            sendResponseToClient(exchange, HTTP_INTERNAL_ERROR, "An error occurred while getting a book from the database.");
+            sendResponse(exchange, HTTP_INTERNAL_ERROR, "An error occurred while getting a book from the database.");
             return;
         } catch (InterruptedException e) {
-            sendResponseToClient(exchange, HTTP_INTERNAL_ERROR, "An error occurred while managing connections to the database.");
+            sendResponse(exchange, HTTP_INTERNAL_ERROR, "An error occurred while managing connections to the database.");
             return;
         }
 
@@ -47,7 +47,7 @@ public class GetBookByIdService implements GetBookService {
         try {
             books = mapFromResultSet(resultSet);
         } catch (SQLException e) {
-            sendResponseToClient(exchange, HTTP_INTERNAL_ERROR, "An error occurred while mapping data from the database.");
+            sendResponse(exchange, HTTP_INTERNAL_ERROR, "An error occurred while mapping data from the database.");
             return;
         }
 
@@ -55,7 +55,7 @@ public class GetBookByIdService implements GetBookService {
             val exceptionMessage = String.format("Duplicate entries detected in the %s.%s table.", BOOKSTOREAPI, BOOKS);
             throw new IllegalStateException(exceptionMessage);
         } else if (books.isEmpty()) {
-            sendResponseToClient(exchange, HTTP_NOT_FOUND, "There are no books with a UUID of: " + uuid);
+            sendResponse(exchange, HTTP_NOT_FOUND, "There are no books with a UUID of: " + uuid);
             return;
         }
 
@@ -65,7 +65,7 @@ public class GetBookByIdService implements GetBookService {
         try {
             body = serializer.serializeBook(book);
         } catch (BookSerializationException e) {
-            sendResponseToClient(exchange, HTTP_INTERNAL_ERROR, "Server failed to create response body.");
+            sendResponse(exchange, HTTP_INTERNAL_ERROR, "Server failed to create response body.");
             return;
         }
 
@@ -79,16 +79,6 @@ public class GetBookByIdService implements GetBookService {
             log.atSevere()
                .withCause(e)
                .log("Failed to send response to server after getting book by id.");
-        }
-    }
-
-    private void sendResponseToClient(HttpExchange exchange, int responseStatus, String message) {
-        try {
-            new SimpleResponseHandler(responseStatus, message).handle(exchange);
-        } catch (IOException e) {
-            log.atSevere()
-               .withCause(e)
-               .log("Server failed to send response to the client.\nResponse Status: %d\nResponse Message: %s", responseStatus, message);
         }
     }
 }
