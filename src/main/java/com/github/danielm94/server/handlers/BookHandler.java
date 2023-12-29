@@ -26,7 +26,7 @@ import static java.net.HttpURLConnection.*;
 
 public class BookHandler implements HttpHandler {
 
-    private static void handleUnsupportedContentType(HttpExchange exchange, ContentType contentType, HttpMethod httpMethod) throws IOException {
+    private static void handleUnsupportedContentType(HttpExchange exchange, ContentType contentType, HttpMethod httpMethod) {
         val responseMessage = format("Server does not support content type [%s] for http method [%s] at the endpoint [%s].",
                 contentType, httpMethod, exchange.getHttpContext().getPath());
         sendResponse(exchange, HTTP_UNSUPPORTED_TYPE, responseMessage);
