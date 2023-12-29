@@ -2,9 +2,9 @@ package com.github.danielm94.server.handlers.book;
 
 import com.github.danielm94.server.HttpMethod;
 import com.github.danielm94.server.requestdata.content.ContentType;
+import com.github.danielm94.server.requestdata.content.UnsupportedContentTypeException;
 import com.github.danielm94.server.services.create.CreateBookService;
 import com.github.danielm94.server.services.create.factory.DefaultCreateBookServiceFactory;
-import com.github.danielm94.server.services.exceptions.UnsupportedContentTypeException;
 import com.github.danielm94.server.services.read.GetAllBooksService;
 import com.github.danielm94.server.services.read.GetBookByIdService;
 import com.github.danielm94.server.services.update.PutBookService;
