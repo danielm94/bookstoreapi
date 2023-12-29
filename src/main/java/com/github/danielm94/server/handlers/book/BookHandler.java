@@ -1,8 +1,8 @@
 package com.github.danielm94.server.handlers.book;
 
-import com.github.danielm94.server.HttpMethod;
 import com.github.danielm94.server.requestdata.content.ContentType;
 import com.github.danielm94.server.requestdata.content.UnsupportedContentTypeException;
+import com.github.danielm94.server.requestdata.method.HttpMethod;
 import com.github.danielm94.server.services.create.CreateBookService;
 import com.github.danielm94.server.services.create.factory.DefaultCreateBookServiceFactory;
 import com.github.danielm94.server.services.read.GetAllBooksService;
@@ -17,11 +17,11 @@ import lombok.val;
 
 import java.util.UUID;
 
-import static com.github.danielm94.server.HttpMethod.getHttpMethodFromStringValue;
 import static com.github.danielm94.server.exchange.Attributes.BOOK_ID;
 import static com.github.danielm94.server.handlers.SimpleResponseHandler.sendResponse;
 import static com.github.danielm94.server.requestdata.content.ContentType.*;
 import static com.github.danielm94.server.requestdata.headers.HttpHeader.*;
+import static com.github.danielm94.server.requestdata.method.HttpMethod.getHttpMethodFromStringValue;
 import static java.lang.String.format;
 import static java.net.HttpURLConnection.*;
 

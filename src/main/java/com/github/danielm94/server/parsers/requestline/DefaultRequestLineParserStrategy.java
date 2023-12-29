@@ -1,6 +1,6 @@
 package com.github.danielm94.server.parsers.requestline;
 
-import com.github.danielm94.server.HttpMethod;
+import com.github.danielm94.server.requestdata.method.HttpMethod;
 import lombok.extern.flogger.Flogger;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;

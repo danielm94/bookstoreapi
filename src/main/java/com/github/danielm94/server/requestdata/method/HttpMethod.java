@@ -1,4 +1,4 @@
-package com.github.danielm94.server;
+package com.github.danielm94.server.requestdata.method;
 
 import lombok.val;
 
