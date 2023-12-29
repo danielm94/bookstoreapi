@@ -11,9 +11,10 @@ import com.github.danielm94.server.services.update.PutBookService;
 import com.github.danielm94.server.services.update.factory.DefaultPutBookServiceFactory;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import lombok.NonNull;
+import lombok.extern.flogger.Flogger;
 import lombok.val;
 
-import java.io.IOException;
 import java.util.UUID;
 
 import static com.github.danielm94.server.HttpMethod.getHttpMethodFromStringValue;
@@ -24,21 +25,43 @@ import static com.github.danielm94.server.requestdata.headers.HttpHeader.*;
 import static java.lang.String.format;
 import static java.net.HttpURLConnection.*;
 
+@Flogger
 public class BookHandler implements HttpHandler {
 
-    private static void handleUnsupportedContentType(HttpExchange exchange, ContentType contentType, HttpMethod httpMethod) {
+    private static void handleUnsupportedContentType(@NonNull HttpExchange exchange, ContentType contentType, HttpMethod httpMethod) {
         val responseMessage = format("Server does not support content type [%s] for http method [%s] at the endpoint [%s].",
                 contentType, httpMethod, exchange.getHttpContext().getPath());
         sendResponse(exchange, HTTP_UNSUPPORTED_TYPE, responseMessage);
     }
 
+    private static boolean hasRequestBody(@NonNull HttpExchange exchange) {
+        val requestHeaders = exchange.getRequestHeaders();
+        if (requestHeaders.containsKey(CONTENT_LENGTH.toString())) {
+            try {
+                int contentLength = Integer.parseInt(requestHeaders.getFirst(CONTENT_LENGTH.toString()));
+                return contentLength > 0;
+            } catch (NumberFormatException e) {
+                log.atWarning().withCause(e).log("Failed to parse Content-Length header.");
+            }
+        }
+        return false;
+    }
+
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
+    public void handle(HttpExchange exchange) {
         val httpMethod = getHttpMethodFromStringValue(exchange.getRequestMethod());
         val headers = exchange.getRequestHeaders();
         switch (httpMethod) {
             case POST -> {
+                if (!hasRequestBody(exchange)) {
+                    sendResponse(exchange, HTTP_BAD_REQUEST, "You must include a body in the request.");
+                    return;
+                }
                 val contentTypeHeaderValue = headers.getFirst(CONTENT_TYPE.toString());
+                if (contentTypeHeaderValue == null) {
+                    sendResponse(exchange, HTTP_BAD_REQUEST, "You must include a Content-Type header in your request.");
+                    return;
+                }
                 val contentType = getContentTypeFromString(contentTypeHeaderValue);
                 val serviceFactory = new DefaultCreateBookServiceFactory();
                 CreateBookService createBookService;
@@ -60,6 +83,10 @@ public class BookHandler implements HttpHandler {
                 }
             }
             case PUT -> {
+                if (!hasRequestBody(exchange)) {
+                    sendResponse(exchange, HTTP_BAD_REQUEST, "You must include a body in the request.");
+                    return;
+                }
                 val attributes = exchange.getHttpContext().getAttributes();
                 val resourceId = (UUID) attributes.get(BOOK_ID.toString());
                 if (resourceId == null) {
@@ -68,6 +95,10 @@ public class BookHandler implements HttpHandler {
                 }
 
                 val contentTypeHeaderValue = headers.getFirst(CONTENT_TYPE.toString());
+                if (contentTypeHeaderValue == null) {
+                    sendResponse(exchange, HTTP_BAD_REQUEST, "You must include a Content-Type header in your request.");
+                    return;
+                }
                 val contentType = getContentTypeFromString(contentTypeHeaderValue);
                 val factory = new DefaultPutBookServiceFactory();
 
