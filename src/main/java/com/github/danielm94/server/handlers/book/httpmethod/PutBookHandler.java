@@ -26,13 +26,10 @@ public class PutBookHandler implements HttpMethodBookHandler {
             return;
         }
 
-        val attributes = exchange.getHttpContext().getAttributes();
-        val resourceId = (UUID) attributes.get(BOOK_ID.toString());
         if (!hasAttribute(exchange, BOOK_ID)) {
             sendResponse(exchange, HTTP_BAD_REQUEST, "You must specify the UUID of the book you wish to update in the URI.");
             return;
         }
-
 
         val contentTypeHeaderValue = exchange.getRequestHeaders().getFirst(CONTENT_TYPE.toString());
         if (!hasHeader(exchange, CONTENT_TYPE)) {
@@ -53,6 +50,8 @@ public class PutBookHandler implements HttpMethodBookHandler {
             return;
         }
 
+        val attributes = exchange.getHttpContext().getAttributes();
+        val resourceId = (UUID) attributes.get(BOOK_ID.toString());
         putBookService.updateBook(exchange, resourceId);
     }
 }
