@@ -31,7 +31,7 @@ public class BookMapper {
         val book = Book.builder()
                        .id(UUID.randomUUID())
                        .bookName(dto.getBookName())
-                       .author(dto.getBookName())
+                       .author(dto.getAuthor())
                        .isbn(dto.getIsbn())
                        .price(dto.getPrice())
                        .dateAdded(now)
