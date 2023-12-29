@@ -1,4 +1,4 @@
-package com.github.danielm94.server.handlers;
+package com.github.danielm94.server.handlers.book;
 
 import com.github.danielm94.server.HttpMethod;
 import com.github.danielm94.server.requestdata.content.ContentType;

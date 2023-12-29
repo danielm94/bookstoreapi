@@ -8,9 +8,9 @@ import com.github.danielm94.database.schemas.DatabaseSchemas;
 import com.github.danielm94.database.schemas.bookstoreapi.DatabaseTables;
 import com.github.danielm94.server.BookServer;
 import com.github.danielm94.server.executors.BookServerExecutor;
-import com.github.danielm94.server.handlers.BookHandler;
 import com.github.danielm94.server.handlers.RequestHandler;
 import com.github.danielm94.server.handlers.SimpleResponseHandler;
+import com.github.danielm94.server.handlers.book.BookHandler;
 import com.sun.net.httpserver.HttpHandler;
 import lombok.val;
 
