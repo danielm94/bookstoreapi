@@ -10,6 +10,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import static com.github.danielm94.server.requestdata.method.HttpMethod.HEAD;
+import static com.github.danielm94.server.requestdata.method.HttpMethod.getHttpMethodFromStringValue;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class ResponseDispatcher {
@@ -68,7 +70,9 @@ public class ResponseDispatcher {
 
         exchange.sendResponseHeaders(responseCode, bodyLength);
 
-        if (body != null) {
+        val requestMethodString = exchange.getRequestMethod();
+        val requestMethod = getHttpMethodFromStringValue(requestMethodString);
+        if (body != null && requestMethod != HEAD) {
             try (val responseBodyOutputStream = exchange.getResponseBody()) {
                 responseBodyOutputStream.write(bodyByteArray);
             }
