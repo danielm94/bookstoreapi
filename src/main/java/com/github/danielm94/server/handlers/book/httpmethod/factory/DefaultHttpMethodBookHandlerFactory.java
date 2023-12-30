@@ -9,7 +9,7 @@ public class DefaultHttpMethodBookHandlerFactory implements HttpMethodBookHandle
     @Override
     public HttpMethodBookHandler getHandler(@NonNull HttpMethod method) throws UnsupportedHttpMethodException {
         return switch (method) {
-            case GET -> new GetBookHandler();
+            case GET, HEAD -> new GetBookHandler();
             case PUT -> new PutBookHandler();
             case POST -> new PostBookHandler();
             case DELETE -> new DeleteBookHandler();
