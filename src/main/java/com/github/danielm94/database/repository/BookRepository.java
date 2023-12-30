@@ -96,14 +96,14 @@ public class BookRepository {
     public static int updateBook(@NonNull Book book) throws MissingBookIDException, SQLException, InterruptedException {
         val id = book.getId();
         if (id == null) {
-            val message = String.format("Expected the book to have an ID, but it was null. The book in question:\n%s", book);
+            val message = format("Expected the book to have an ID, but it was null. The book in question:\n%s", book);
             log.atWarning().log(message);
             throw new MissingBookIDException(message);
         }
 
         log.atFine().log("Updating book with ID of [%s] with new book:\n%s", id, book);
 
-        val query = String.format(UPDATE_BOOK_FORMATTABLE_QEURY,
+        val query = format(UPDATE_BOOK_FORMATTABLE_QEURY,
                 SCHEMA,
                 TABLE,
                 BOOK_NAME,
@@ -134,7 +134,7 @@ public class BookRepository {
 
     public static int deleteBook(@NonNull UUID id) throws SQLException, InterruptedException {
         log.atFine().log("Deleting a book with an id of %s.", id);
-        val query = String.format(DELETE_BOOK_FORMATTABLE_QUERY, SCHEMA, TABLE);
+        val query = format(DELETE_BOOK_FORMATTABLE_QUERY, SCHEMA, TABLE);
 
         val connection = getInstance().getConnection();
         val statement = connection.prepareStatement(query);
