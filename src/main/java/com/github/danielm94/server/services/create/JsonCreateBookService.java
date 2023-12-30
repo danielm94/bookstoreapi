@@ -1,5 +1,6 @@
 package com.github.danielm94.server.services.create;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.danielm94.database.repository.BookRepository;
 import com.github.danielm94.server.domain.book.BookDTO;
 import com.github.danielm94.server.domain.book.mappers.JsonBookDTOMapper;
@@ -13,6 +14,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.UUID;
 
+import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
 import static com.github.danielm94.server.domain.book.mappers.BookMapper.*;
 import static com.github.danielm94.server.handlers.SimpleResponseHandler.sendResponse;
 import static com.github.danielm94.server.response.ResponseDispatcher.createResponse;
@@ -29,7 +31,9 @@ public class JsonCreateBookService implements CreateBookService {
 
     @Override
     public void createBook(@NonNull HttpExchange exchange) {
-        val dtoMapper = new JsonBookDTOMapper();
+        val objectMapper = new ObjectMapper();
+        objectMapper.configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
+        val dtoMapper = new JsonBookDTOMapper(objectMapper);
 
         BookDTO bookDTO;
         try {
