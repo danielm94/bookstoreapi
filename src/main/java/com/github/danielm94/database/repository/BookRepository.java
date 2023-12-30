@@ -33,64 +33,63 @@ public class BookRepository {
 
     public static int createBook(@NonNull Book book) throws SQLException, InterruptedException {
         log.atFine().log("Creating book in %s.%s table for the book:\n%s", SCHEMA, TABLE, book);
-        val connection = getInstance().getConnection();
-
-        val statement = connection.createStatement();
         val query = format(CREATE_NEW_BOOK_FORMATTABLE_QUERY,
                 SCHEMA, TABLE,
                 ID, BOOK_NAME, AUTHOR, ISBN, PRICE, DATE_ADDED, DATE_UPDATED,
                 book.getId(), book.getBookName(), book.getAuthor(), book.getIsbn(), book.getPrice(), book.getDateAdded(), book.getDateUpdated());
-
         log.atFine().log("Executing query: %s", query);
-        val rowsAffected = statement.executeUpdate(query);
-        log.atFine().log("Query has finished executing. Rows affected: %d", rowsAffected);
 
+        val connection = getInstance().getConnection();
+        val statement = connection.createStatement();
+        val rowsAffected = statement.executeUpdate(query);
         getInstance().returnConnection(connection);
+
+        log.atFine().log("Query has finished executing. Rows affected: %d", rowsAffected);
         return rowsAffected;
     }
 
     public static ResultSet getBook(@NonNull UUID uuid) throws SQLException, InterruptedException {
         log.atFine().log("Getting book by id: %s", uuid);
-        val connection = getInstance().getConnection();
 
-        val statement = connection.createStatement();
         val query = format(SELECT_BOOK_BY_ID_FORMATTABLE_QUERY, SCHEMA, TABLE, ID, uuid);
-
         log.atFine().log("Executing query: %s", query);
-        val resultSet = statement.executeQuery(query);
-        log.atFine().log("Query has been successfully executed.");
 
+        val connection = getInstance().getConnection();
+        val statement = connection.createStatement();
+        val resultSet = statement.executeQuery(query);
         getInstance().returnConnection(connection);
+
+        log.atFine().log("Query has been successfully executed.");
         return resultSet;
     }
 
     public static ResultSet getBooks() throws SQLException, InterruptedException {
         log.atFine().log("Getting all books...");
-        val connection = getInstance().getConnection();
 
-        val statement = connection.createStatement();
         val query = format(GET_ALL_BOOKS_FORMATTABLE_QUERY, SCHEMA, TABLE);
-
         log.atFine().log("Executing query: %s", query);
-        val resultSet = statement.executeQuery(query);
-        log.atFine().log("Query has been successfully executed.");
 
+        val connection = getInstance().getConnection();
+        val statement = connection.createStatement();
+        val resultSet = statement.executeQuery(query);
         getInstance().returnConnection(connection);
+
+        log.atFine().log("Query has been successfully executed.");
         return resultSet;
     }
 
     public static ResultSet getNumberOfBooksWithId(@NonNull UUID uuid) throws SQLException, InterruptedException {
         log.atFine().log("Getting the number of books");
-        val connection = getInstance().getConnection();
 
-        val statement = connection.createStatement();
         val query = format(GET_NUMBER_OF_BOOKS_WITH_ID_FORMATTABLE_QUERY, SCHEMA, TABLE, ID, uuid);
-
         log.atFine().log("Executing query: %s", query);
-        val resultSet = statement.executeQuery(query);
-        log.atFine().log("Query has been successfully executed.");
 
+        val connection = getInstance().getConnection();
+        val statement = connection.createStatement();
+        val resultSet = statement.executeQuery(query);
         getInstance().returnConnection(connection);
+
+        log.atFine().log("Query has been successfully executed.");
         return resultSet;
     }
 
@@ -103,7 +102,6 @@ public class BookRepository {
         }
 
         log.atFine().log("Updating book with ID of [%s] with new book:\n%s", id, book);
-        val connection = getInstance().getConnection();
 
         val query = String.format(UPDATE_BOOK_FORMATTABLE_QEURY,
                 SCHEMA,
@@ -117,6 +115,7 @@ public class BookRepository {
                 ID
         );
 
+        val connection = getInstance().getConnection();
         val statement = connection.prepareStatement(query);
         statement.setString(1, book.getBookName());
         statement.setString(2, book.getAuthor());
@@ -125,8 +124,9 @@ public class BookRepository {
         statement.setObject(5, book.getDateAdded());
         statement.setObject(6, book.getDateUpdated());
         statement.setString(7, id.toString());
-
         val affectedRows = statement.executeUpdate();
+        getInstance().returnConnection(connection);
+
         log.atFine()
            .log("Successfully executed query to update book with an ID of [%s]. Number of rows affected: %d", id, affectedRows);
         return affectedRows;
@@ -134,14 +134,14 @@ public class BookRepository {
 
     public static int deleteBook(@NonNull UUID id) throws SQLException, InterruptedException {
         log.atFine().log("Deleting a book with an id of %s.", id);
-        val connection = getInstance().getConnection();
-
         val query = String.format(DELETE_BOOK_FORMATTABLE_QUERY, SCHEMA, TABLE);
+
+        val connection = getInstance().getConnection();
         val statement = connection.prepareStatement(query);
         statement.setString(1, id.toString());
         val rowsAffected = statement.executeUpdate();
-
         getInstance().returnConnection(connection);
+
         log.atFine().log("Successfully executed query to delete book. Rows affected: %n", rowsAffected);
         return rowsAffected;
     }
