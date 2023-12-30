@@ -11,4 +11,7 @@ public class BookDTO {
     private String isbn;
     private BigDecimal price;
 
+    public boolean allFieldsAreNull() {
+        return bookName == null && author == null && isbn == null && price == null;
+    }
 }
