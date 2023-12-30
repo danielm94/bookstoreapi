@@ -1,12 +1,12 @@
 package com.github.danielm94.server.services.create;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.danielm94.database.repository.BookRepository;
 import com.github.danielm94.server.domain.book.BookDTO;
-import com.github.danielm94.server.domain.book.mappers.JsonBookDTOMapper;
+import com.github.danielm94.server.domain.book.mappers.BookDTOMapper;
 import com.github.danielm94.server.requestdata.headers.HttpHeader;
 import com.sun.net.httpserver.HttpExchange;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.flogger.Flogger;
 import lombok.val;
 
@@ -14,14 +14,16 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.UUID;
 
-import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
 import static com.github.danielm94.server.domain.book.mappers.BookMapper.*;
 import static com.github.danielm94.server.handlers.SimpleResponseHandler.sendResponse;
 import static com.github.danielm94.server.response.ResponseDispatcher.createResponse;
 import static java.net.HttpURLConnection.*;
 
 @Flogger
+@RequiredArgsConstructor
 public class JsonCreateBookService implements CreateBookService {
+    @NonNull
+    private final BookDTOMapper dtoMapper;
 
     private static String getLocation(HttpExchange exchange, UUID id) {
         var path = exchange.getHttpContext().getPath();
@@ -31,10 +33,6 @@ public class JsonCreateBookService implements CreateBookService {
 
     @Override
     public void createBook(@NonNull HttpExchange exchange) {
-        val objectMapper = new ObjectMapper();
-        objectMapper.configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
-        val dtoMapper = new JsonBookDTOMapper(objectMapper);
-
         BookDTO bookDTO;
         try {
             bookDTO = dtoMapper.parseRequestBodyToBookDTO(exchange.getRequestBody());
@@ -43,7 +41,7 @@ public class JsonCreateBookService implements CreateBookService {
             return;
         }
 
-        val book = mapFromDTO(bookDTO);
+        val book = createNewBookFromDTO(bookDTO);
         boolean bookWasCreated;
         try {
             val rowsAffected = BookRepository.createBook(book);
