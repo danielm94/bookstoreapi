@@ -1,13 +1,13 @@
 package com.github.danielm94.server.services.update;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.danielm94.database.repository.BookRepository;
 import com.github.danielm94.database.repository.MissingBookIDException;
 import com.github.danielm94.server.domain.book.Book;
 import com.github.danielm94.server.domain.book.BookDTO;
-import com.github.danielm94.server.domain.book.mappers.JsonBookDTOMapper;
+import com.github.danielm94.server.domain.book.mappers.BookDTOMapper;
 import com.sun.net.httpserver.HttpExchange;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.flogger.Flogger;
 import lombok.val;
 
@@ -17,7 +17,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
-import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
 import static com.github.danielm94.database.repository.BookRepository.*;
 import static com.github.danielm94.server.domain.book.mappers.BookMapper.*;
 import static com.github.danielm94.server.handlers.SimpleResponseHandler.sendResponse;
@@ -25,12 +24,12 @@ import static java.net.HttpURLConnection.*;
 import static java.time.LocalDateTime.now;
 
 @Flogger
+@RequiredArgsConstructor
 public class JsonPutBookService implements PutBookService {
-    private static void beginUpdatingTheBook(@NonNull HttpExchange exchange, @NonNull Book oldBook) {
-        val objectMapper = new ObjectMapper();
-        objectMapper.configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
-        val dtoMapper = new JsonBookDTOMapper(objectMapper);
+    @NonNull
+    private final BookDTOMapper dtoMapper;
 
+    private void beginUpdatingTheBook(@NonNull HttpExchange exchange, @NonNull Book oldBook) {
         BookDTO bookDTO;
         try {
             bookDTO = dtoMapper.parseRequestBodyToBookDTO(exchange.getRequestBody());
