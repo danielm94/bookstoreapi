@@ -24,7 +24,7 @@ public class BookMapper {
     private BookMapper() {
     }
 
-    public static Book mapFromDTO(@NonNull BookDTO dto) {
+    public static Book createNewBookFromDTO(@NonNull BookDTO dto) {
         log.atFine().log("Mapping the following book dto into a book:\n%s", dto);
 
         val now = now();
