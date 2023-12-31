@@ -8,7 +8,6 @@ import com.github.danielm94.database.schemas.DatabaseSchemas;
 import com.github.danielm94.database.schemas.bookstoreapi.DatabaseTables;
 import com.github.danielm94.server.BookServer;
 import com.github.danielm94.server.executors.BookServerExecutor;
-import com.github.danielm94.server.handlers.RequestHandler;
 import com.github.danielm94.server.handlers.SimpleResponseHandler;
 import com.github.danielm94.server.handlers.book.BookHandler;
 import com.sun.net.httpserver.HttpHandler;
@@ -28,7 +27,6 @@ import static com.github.danielm94.server.exchange.Attributes.BOOK_ID;
 
 public class Main {
     public static final int SERVER_PORT = 8000;
-    public static final String DEBUG_ENDPOINT = "/";
     public static final String BOOK_STORE_API_ENDPOINT = "/api/books/";
     public static final String DATABASE_PROPERTIES_FILE_PATH = "src/main/resources/db.properties";
     public static final Pattern BOOKS_ENDPOINT_DYNAMIC_PATH_PATTERN = Pattern.compile(BOOK_STORE_API_ENDPOINT + "([^/]+)");
@@ -62,9 +60,6 @@ public class Main {
 
         val bookContext = server.createContext(BOOK_STORE_API_ENDPOINT);
         bookContext.setHandler(new BookHandler());
-
-        val debugContext = server.createContext(DEBUG_ENDPOINT);
-        debugContext.setHandler(new RequestHandler());
 
         return server;
     }
