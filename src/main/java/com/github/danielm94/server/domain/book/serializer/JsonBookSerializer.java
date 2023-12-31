@@ -13,6 +13,7 @@ import static java.lang.String.format;
 
 @AllArgsConstructor
 public class JsonBookSerializer implements BookSerializer {
+    @NonNull
     private final ObjectMapper mapper;
 
     private String serialize(Object book, String exceptionMessage) throws BookSerializationException {
