@@ -2,21 +2,20 @@ package com.github.danielm94.server.domain.book.serializer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.danielm94.server.domain.book.Book;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
 
 import java.util.List;
 
-import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
 import static java.lang.String.format;
 
+@AllArgsConstructor
 public class JsonBookSerializer implements BookSerializer {
-    private static String serialize(Object book, String exceptionMessage) throws BookSerializationException {
-        val mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        mapper.disable(WRITE_DATES_AS_TIMESTAMPS);
+    private final ObjectMapper mapper;
+
+    private String serialize(Object book, String exceptionMessage) throws BookSerializationException {
         try {
             return mapper.writeValueAsString(book);
         } catch (JsonProcessingException e) {
