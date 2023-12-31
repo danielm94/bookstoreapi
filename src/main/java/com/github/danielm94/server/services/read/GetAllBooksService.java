@@ -2,11 +2,11 @@ package com.github.danielm94.server.services.read;
 
 import com.github.danielm94.server.domain.book.Book;
 import com.github.danielm94.server.domain.book.serializer.BookSerializationException;
-import com.github.danielm94.server.domain.book.serializer.JsonBookSerializer;
+import com.github.danielm94.server.domain.book.serializer.BookSerializer;
 import com.sun.net.httpserver.HttpExchange;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.flogger.Flogger;
-import lombok.val;
 
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -22,7 +22,10 @@ import static com.github.danielm94.server.response.ResponseDispatcher.createResp
 import static java.net.HttpURLConnection.*;
 
 @Flogger
+@AllArgsConstructor
 public class GetAllBooksService implements GetBookService {
+    private final BookSerializer bookSerializer;
+
     @Override
     public void get(@NonNull HttpExchange exchange) {
         ResultSet resultSet;
@@ -49,11 +52,9 @@ public class GetAllBooksService implements GetBookService {
             return;
         }
 
-
-        val serializer = new JsonBookSerializer();
         String body;
         try {
-            body = serializer.serializeBooks(books);
+            body = bookSerializer.serializeBooks(books);
         } catch (BookSerializationException e) {
             sendResponse(exchange, HTTP_INTERNAL_ERROR, "Server failed to create response body.");
             return;

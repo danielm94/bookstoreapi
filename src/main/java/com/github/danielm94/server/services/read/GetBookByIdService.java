@@ -2,7 +2,7 @@ package com.github.danielm94.server.services.read;
 
 import com.github.danielm94.server.domain.book.Book;
 import com.github.danielm94.server.domain.book.serializer.BookSerializationException;
-import com.github.danielm94.server.domain.book.serializer.JsonBookSerializer;
+import com.github.danielm94.server.domain.book.serializer.BookSerializer;
 import com.sun.net.httpserver.HttpExchange;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -28,6 +28,7 @@ import static java.net.HttpURLConnection.*;
 @Flogger
 @AllArgsConstructor
 public class GetBookByIdService implements GetBookService {
+    private final BookSerializer bookSerializer;
     private final UUID uuid;
 
     @Override
@@ -60,10 +61,9 @@ public class GetBookByIdService implements GetBookService {
         }
 
         val book = books.getFirst();
-        val serializer = new JsonBookSerializer();
         String body;
         try {
-            body = serializer.serializeBook(book);
+            body = bookSerializer.serializeBook(book);
         } catch (BookSerializationException e) {
             sendResponse(exchange, HTTP_INTERNAL_ERROR, "Server failed to create response body.");
             return;
