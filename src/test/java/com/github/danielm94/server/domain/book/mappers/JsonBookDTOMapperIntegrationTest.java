@@ -49,6 +49,7 @@ class JsonBookDTOMapperIntegrationTest {
         val stream = new ByteArrayInputStream(badJson.getBytes(StandardCharsets.UTF_8));
 
         assertThatThrownBy(() -> dtoMapper.parseRequestBodyToBookDTO(stream))
+                .as("Invalid JSON causes an exception to be thrown.")
                 .isInstanceOf(IOException.class);
     }
 }

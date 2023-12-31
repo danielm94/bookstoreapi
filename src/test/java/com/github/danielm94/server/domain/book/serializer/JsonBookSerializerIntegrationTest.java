@@ -46,11 +46,16 @@ class JsonBookSerializerIntegrationTest {
 
         assertThat(deserializedBook)
                 .usingRecursiveComparison()
-                .ignoringFields("dateAdded", "dateUpdated") // Ignore dateAdded and dateUpdated for direct comparison
+                .ignoringFields("dateAdded", "dateUpdated")
+                .as("Check if the serialized and then deserialized book matches the original, except for LocalDateTime fields.")
                 .isEqualTo(book);
 
-        assertThat(deserializedBook.getDateAdded()).isEqualToIgnoringNanos(book.getDateAdded());
-        assertThat(deserializedBook.getDateUpdated()).isEqualToIgnoringNanos(book.getDateUpdated());
+        assertThat(deserializedBook.getDateAdded())
+                .as("Verify if the dateAdded field matches with truncated precision.")
+                .isEqualToIgnoringNanos(book.getDateAdded());
+        assertThat(deserializedBook.getDateUpdated())
+                .as("Verify if the dateUpdated field matches with truncated precision.")
+                .isEqualToIgnoringNanos(book.getDateUpdated());
     }
 
     @Test
@@ -83,7 +88,10 @@ class JsonBookSerializerIntegrationTest {
         val deserializedBookArray = objectMapper.readValue(jsonResult, Book[].class);
         val deserializedBookList = List.of(deserializedBookArray);
 
-        assertThat(deserializedBookList).usingRecursiveComparison().isEqualTo(bookList);
+        assertThat(deserializedBookList)
+                .as("Ensure that a list of books is serialized and deserialized correctly, maintaining the integrity of each book object.")
+                .usingRecursiveComparison()
+                .isEqualTo(bookList);
     }
 
     @Test
@@ -96,6 +104,7 @@ class JsonBookSerializerIntegrationTest {
                        .build();
 
         assertThatThrownBy(() -> noTimeSupportSerializer.serializeBook(book))
+                .as("Expect a BookSerializationException when trying to serialize a book with unsupported date format")
                 .isInstanceOf(BookSerializationException.class)
                 .hasCauseInstanceOf(JsonProcessingException.class);
     }
