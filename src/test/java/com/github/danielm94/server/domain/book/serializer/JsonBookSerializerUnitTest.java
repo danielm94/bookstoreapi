@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.openMocks;
 
-class JsonBookSerializerTest {
+class JsonBookSerializerUnitTest {
     @Mock
     private ObjectMapper objectMapper;
     private AutoCloseable autoCloseable;
