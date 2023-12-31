@@ -2,6 +2,7 @@ package com.github.danielm94.server.domain.book.mappers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.danielm94.server.domain.book.BookDTO;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.flogger.Flogger;
 import lombok.val;
@@ -13,13 +14,11 @@ import java.nio.charset.StandardCharsets;
 
 
 @Flogger
+@AllArgsConstructor
 public class JsonBookDTOMapper implements BookDTOMapper {
-
+    @NonNull
     private final ObjectMapper objectMapper;
 
-    public JsonBookDTOMapper(@NonNull ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
 
     @Override
     public BookDTO parseRequestBodyToBookDTO(@NonNull InputStream stream) throws IOException {
