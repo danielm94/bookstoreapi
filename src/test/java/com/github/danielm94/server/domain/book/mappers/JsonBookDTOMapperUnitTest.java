@@ -3,6 +3,7 @@ package com.github.danielm94.server.domain.book.mappers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.danielm94.server.domain.book.BookDTO;
 import lombok.val;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -29,6 +30,11 @@ class JsonBookDTOMapperUnitTest {
         this.dtoMapper = new JsonBookDTOMapper(mapper);
     }
 
+    @AfterEach
+    void tearDown() throws Exception {
+        autoCloseable.close();
+    }
+
     @Test
     void exceptionIsThrownWhenInstantiatingWithNullMapper() {
         assertThatThrownBy(() -> new JsonBookDTOMapper(null))
@@ -44,8 +50,7 @@ class JsonBookDTOMapperUnitTest {
         expectedDto.setIsbn("123456789");
         expectedDto.setPrice(new BigDecimal("19.99"));
 
-        val objectMapper = new ObjectMapper();
-        val json = objectMapper.writeValueAsString(expectedDto);
+        val json = "{\"bookName\":\"Test Book\",\"author\":\"Test Author\",\"isbn\":\"123456789\",\"price\":19.99}";
         val stream = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
 
         when(mapper.readValue(json, BookDTO.class)).thenReturn(expectedDto);
