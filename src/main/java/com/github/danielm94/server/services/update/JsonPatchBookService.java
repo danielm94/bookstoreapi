@@ -39,7 +39,7 @@ public class JsonPatchBookService implements PatchBookService {
             return;
 
         }
-
+        //TODO: Server should send 404 response if requested book to patch doesn't exist.
         val book = Book.builder()
                        .id(uuid)
                        .bookName(bookDTO.getBookName())
