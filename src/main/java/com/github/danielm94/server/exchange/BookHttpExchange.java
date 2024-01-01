@@ -1,6 +1,5 @@
 package com.github.danielm94.server.exchange;
 
-import com.github.danielm94.server.requestdata.headers.HttpHeader;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpExchange;
@@ -18,6 +17,8 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.github.danielm94.server.requestdata.headers.HttpHeader.*;
 
 @Getter
 @Setter
@@ -38,7 +39,7 @@ public class BookHttpExchange extends HttpExchange {
 
     private void addContentLengthHeader(long responseLength) {
         responseLength = Math.max(responseLength, 0);
-        val key = HttpHeader.CONTENT_LENGTH.toString();
+        val key = CONTENT_LENGTH.toString();
         val value = Long.toString(responseLength);
         responseHeaders.add(key, value);
     }
