@@ -33,7 +33,7 @@ class JsonBookSerializerUnitTest {
 
     @AfterEach
     void tearDown() throws Exception {
-        autoCloseable.close();
+        if (autoCloseable != null) autoCloseable.close();
     }
 
     @Test
