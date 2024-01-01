@@ -18,6 +18,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
+@SuppressWarnings("DataFlowIssue")
 class JsonBookDTOMapperUnitTest {
     @Mock
     private ObjectMapper mapper;

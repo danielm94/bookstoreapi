@@ -25,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 
+@SuppressWarnings("DataFlowIssue")
 class BookMapperTest {
     private static final ConnectionCredentials H2_CREDENTIALS = new RawConnectionCredentials("", "sa", "jdbc:h2:mem:bookstoreapi;DB_CLOSE_DELAY=-1");
     private static final ConnectionPoolConfiguration DEFAULT_CONFIG = new DefaultPoolConfiguration();
