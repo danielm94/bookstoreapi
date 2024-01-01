@@ -26,7 +26,7 @@ public class ResultSetParser {
         val columnCount = meta.getColumnCount();
         val columnNames = new String[columnCount];
         for (var i = 0; i < columnCount; i++) {
-            columnNames[i] = meta.getColumnName(i + 1);
+            columnNames[i] = meta.getColumnName(i + 1).toUpperCase();
         }
 
         val resultTable = new ArrayList<Map<String, Object>>();
