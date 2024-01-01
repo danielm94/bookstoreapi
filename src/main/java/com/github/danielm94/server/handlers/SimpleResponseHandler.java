@@ -33,7 +33,7 @@ public class SimpleResponseHandler implements HttpHandler {
     }
 
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
+    public void handle(@NonNull HttpExchange exchange) throws IOException {
         sendResponseInternal(exchange, statusCode, body);
     }
 }
