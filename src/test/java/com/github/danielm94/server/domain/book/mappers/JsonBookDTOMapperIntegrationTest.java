@@ -15,12 +15,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 class JsonBookDTOMapperIntegrationTest {
-    private ObjectMapper mapper;
     private JsonBookDTOMapper dtoMapper;
 
     @BeforeEach
     void setUp() {
-        this.mapper = new ObjectMapper();
+        val mapper = new ObjectMapper();
         this.dtoMapper = new JsonBookDTOMapper(mapper);
     }
 
