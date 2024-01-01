@@ -9,6 +9,7 @@ import lombok.val;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -17,7 +18,6 @@ import static com.github.danielm94.database.resultset.ResultSetParser.parseResul
 import static com.github.danielm94.database.schemas.bookstoreapi.books.BooksColumn.*;
 import static java.time.LocalDateTime.now;
 import static java.time.LocalDateTime.parse;
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
 @Flogger
 public class BookMapper {
@@ -42,22 +42,44 @@ public class BookMapper {
         return book;
     }
 
-    public static List<Book> mapFromResultSet(@NonNull ResultSet resultSet) throws SQLException {
+    public static List<Book> mapFromResultSet(@NonNull ResultSet resultSet, @NonNull DateTimeFormatter formatter) throws SQLException {
         log.atFine().log("Mapping result set into a list of books.");
 
         val books = new ArrayList<Book>();
         val table = parseResultSetToListOfMaps(resultSet);
-        val formatter = ISO_LOCAL_DATE_TIME;
         for (val row : table) {
+            val idColumnKey = ID.toString().toUpperCase();
+            val idColumnValue = row.get(idColumnKey).toString();
+            val id = UUID.fromString(idColumnValue);
+
+            val bookNameColumnKey = BOOK_NAME.toString().toUpperCase();
+            val bookNameColumnValue = row.get(bookNameColumnKey).toString();
+
+            val authorColumnKey = AUTHOR.toString().toUpperCase();
+            val authorColumnValue = row.get(authorColumnKey).toString();
+
+            val isbnColumnKey = ISBN.toString().toUpperCase();
+            val isbnColumnValue = row.get(isbnColumnKey).toString();
+
+            val priceColumnKey = PRICE.toString().toUpperCase();
+            val priceColumnValue = new BigDecimal(row.get(priceColumnKey).toString());
+
+            val dateAddedColumnKey = DATE_ADDED.toString().toUpperCase();
+            val dateAddedColumnValue = parse(row.get(dateAddedColumnKey).toString(), formatter);
+
+            val dateUpdatedColumnKey = DATE_UPDATED.toString().toUpperCase();
+            val dateUpdatedColumnValue = parse(row.get(dateUpdatedColumnKey).toString(), formatter);
+
             val book = Book.builder()
-                           .id(UUID.fromString(row.get(ID.toString()).toString()))
-                           .bookName(row.get(BOOK_NAME.toString()).toString())
-                           .author(row.get(AUTHOR.toString()).toString())
-                           .isbn(row.get(ISBN.toString()).toString())
-                           .price(new BigDecimal(row.get(PRICE.toString()).toString()))
-                           .dateAdded(parse(row.get(DATE_ADDED.toString()).toString(), formatter))
-                           .dateUpdated(parse(row.get(DATE_UPDATED.toString()).toString(), formatter))
+                           .id(id)
+                           .bookName(bookNameColumnValue)
+                           .author(authorColumnValue)
+                           .isbn(isbnColumnValue)
+                           .price(priceColumnValue)
+                           .dateAdded(dateAddedColumnValue)
+                           .dateUpdated(dateUpdatedColumnValue)
                            .build();
+
             log.atFinest().log("Result set row was successfully mapped to the following book:\n%s", book);
             books.add(book);
         }
@@ -65,5 +87,6 @@ public class BookMapper {
         log.atFine().log("Result set was successfully mapped to a list of books.");
         return books;
     }
+
 
 }

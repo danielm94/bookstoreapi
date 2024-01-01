@@ -22,6 +22,7 @@ import static com.github.danielm94.server.domain.book.mappers.BookMapper.*;
 import static com.github.danielm94.server.handlers.SimpleResponseHandler.sendResponse;
 import static java.net.HttpURLConnection.*;
 import static java.time.LocalDateTime.now;
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
 @Flogger
 @RequiredArgsConstructor
@@ -90,7 +91,7 @@ public class JsonPutBookService implements PutBookService {
 
         List<Book> books;
         try {
-            books = mapFromResultSet(resultSet);
+            books = mapFromResultSet(resultSet, ISO_LOCAL_DATE_TIME);
         } catch (SQLException e) {
             sendResponse(exchange, HTTP_INTERNAL_ERROR, "An error occurred while mapping data from the database.");
             return;
