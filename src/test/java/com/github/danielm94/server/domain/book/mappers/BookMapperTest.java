@@ -13,17 +13,18 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static com.github.danielm94.database.repository.BookRepository.*;
 import static com.github.danielm94.server.domain.book.mappers.BookMapper.*;
 import static com.github.danielm94.util.DateTimeFormat.H2_DATABASE_FORMAT;
+import static java.time.LocalDateTime.now;
+import static java.time.LocalDateTime.of;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.UUID.randomUUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 
 @SuppressWarnings("DataFlowIssue")
 class BookMapperTest {
@@ -40,7 +41,7 @@ class BookMapperTest {
         dto.setPrice(new BigDecimal("29.99"));
 
         val book = createNewBookFromDTO(dto);
-        val now = LocalDateTime.of(2000, 1, 1, 1, 1, 1).truncatedTo(SECONDS);
+        val now = now();
 
         assertThat(book.getId())
                 .as("Check book receives a random ID upon creation.")
@@ -76,7 +77,7 @@ class BookMapperTest {
     void mapFromResultSetTest() throws SQLException, InterruptedException {
         ConnectionPoolManager.initialize(DEFAULT_CONFIG, H2_CREDENTIALS);
         setUpH2Database();
-        val localDateTime = LocalDateTime.of(2000, 1, 1, 1, 1, 1).truncatedTo(SECONDS);
+        val localDateTime = of(2000, 1, 1, 1, 1, 1).truncatedTo(SECONDS);
         val expectedBook1 = Book.builder()
                                 .id(randomUUID())
                                 .bookName("Book 1")
@@ -110,14 +111,14 @@ class BookMapperTest {
 
     @Test
     void exceptionIsThrownWhenPassingNullResultSetToMapFromResultSetTest() {
-        assertThatThrownBy(() -> mapFromResultSet(null, DateTimeFormatter.ISO_DATE))
+        assertThatThrownBy(() -> mapFromResultSet(null, mock(DateTimeFormatter.class)))
                 .as("NullPointerException should be thrown when passing null book.")
                 .isInstanceOf(NullPointerException.class);
     }
 
     @Test
     void exceptionIsThrownWhenPassingNullDateTimeFormatterToMapFromResultSetTest() {
-        assertThatThrownBy(() -> mapFromResultSet(any(ResultSet.class), null))
+        assertThatThrownBy(() -> mapFromResultSet(mock(ResultSet.class), null))
                 .as("NullPointerException should be thrown when passing null book.")
                 .isInstanceOf(NullPointerException.class);
     }
