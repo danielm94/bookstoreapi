@@ -2,7 +2,7 @@ package com.github.danielm94.server.parsers;
 
 import com.github.danielm94.server.context.BookContext;
 import com.github.danielm94.server.exchange.BookHttpExchange;
-import com.github.danielm94.server.handlers.DoNothingHandler;
+import com.github.danielm94.server.handlers.ExceptionHandler;
 import com.github.danielm94.server.handlers.SimpleResponseHandler;
 import com.github.danielm94.server.parsers.body.BodyParserStrategy;
 import com.github.danielm94.server.parsers.clientinput.ClientInputParserStrategy;
@@ -82,10 +82,7 @@ public class RequestDataParser {
             log.atFine()
                .log("Successfully set the response body of the exchange to the client socket's output stream.");
         } catch (IOException e) {
-            log.atWarning()
-               .withCause(e)
-               .log("Could not get the output stream from the client socket.");
-            setHandler(exchange, new DoNothingHandler());
+            setHandler(exchange, new ExceptionHandler("Could not get the output stream from the client socket.",e));
             return exchange;
         }
 
