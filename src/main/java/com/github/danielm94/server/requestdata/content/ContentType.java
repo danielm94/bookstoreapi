@@ -16,10 +16,6 @@ public enum ContentType {
     @Getter(AccessLevel.NONE)
     private static final Map<String, ContentType> lookupMap;
 
-
-    private final String mimeType;
-
-
     static {
         lookupMap = new HashMap<>();
         for (val value : values()) {
@@ -27,12 +23,19 @@ public enum ContentType {
         }
     }
 
+    private final String mimeType;
+
+    public static ContentType getContentTypeFromString(String mimeType) throws UnsupportedContentTypeException {
+        val contentType = lookupMap.get(mimeType);
+        if (contentType == null) {
+            throw new UnsupportedContentTypeException(mimeType + " is not a supported content type.");
+        }
+        return lookupMap.get(mimeType);
+    }
+
+
     @Override
     public String toString() {
         return mimeType;
-    }
-
-    public static ContentType getContentTypeFromString(String mimeType) {
-        return lookupMap.get(mimeType);
     }
 }

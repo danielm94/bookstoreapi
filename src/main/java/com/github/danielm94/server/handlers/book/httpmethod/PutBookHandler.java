@@ -1,5 +1,6 @@
 package com.github.danielm94.server.handlers.book.httpmethod;
 
+import com.github.danielm94.server.requestdata.content.ContentType;
 import com.github.danielm94.server.requestdata.content.UnsupportedContentTypeException;
 import com.github.danielm94.server.services.update.PutBookService;
 import com.github.danielm94.server.services.update.factory.DefaultPutBookServiceFactory;
@@ -11,12 +12,13 @@ import java.util.UUID;
 
 import static com.github.danielm94.server.exchange.Attributes.BOOK_ID;
 import static com.github.danielm94.server.handlers.SimpleResponseHandler.sendResponse;
-import static com.github.danielm94.server.requestdata.content.ContentType.*;
-import static com.github.danielm94.server.requestdata.headers.HttpHeader.*;
+import static com.github.danielm94.server.requestdata.content.ContentType.getContentTypeFromString;
+import static com.github.danielm94.server.requestdata.headers.HttpHeader.CONTENT_TYPE;
 import static com.github.danielm94.server.requestdata.method.HttpMethod.PUT;
 import static com.github.danielm94.server.requestdata.validation.RequestDataValidator.*;
 import static java.lang.String.format;
-import static java.net.HttpURLConnection.*;
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_UNSUPPORTED_TYPE;
 
 public class PutBookHandler implements HttpMethodBookHandler {
     @Override
@@ -37,7 +39,14 @@ public class PutBookHandler implements HttpMethodBookHandler {
             return;
         }
 
-        val contentType = getContentTypeFromString(contentTypeHeaderValue);
+        ContentType contentType;
+        try {
+            contentType = getContentTypeFromString(contentTypeHeaderValue);
+        } catch (UnsupportedContentTypeException e) {
+            sendResponse(exchange, HTTP_BAD_REQUEST, contentTypeHeaderValue + " is not a supported content type.");
+            return;
+        }
+
         val factory = new DefaultPutBookServiceFactory();
 
         PutBookService putBookService;

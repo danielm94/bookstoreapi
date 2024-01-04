@@ -1,5 +1,6 @@
 package com.github.danielm94.server.handlers.book.httpmethod;
 
+import com.github.danielm94.server.requestdata.content.ContentType;
 import com.github.danielm94.server.requestdata.content.UnsupportedContentTypeException;
 import com.github.danielm94.server.services.create.CreateBookService;
 import com.github.danielm94.server.services.create.factory.DefaultCreateBookServiceFactory;
@@ -32,7 +33,14 @@ public class PostBookHandler implements HttpMethodBookHandler {
         val headers = exchange.getRequestHeaders();
         val contentTypeHeaderValue = headers.getFirst(CONTENT_TYPE.toString());
 
-        val contentType = getContentTypeFromString(contentTypeHeaderValue);
+        ContentType contentType;
+        try {
+            contentType = getContentTypeFromString(contentTypeHeaderValue);
+        } catch (UnsupportedContentTypeException e) {
+            sendResponse(exchange, HTTP_BAD_REQUEST, contentTypeHeaderValue + " is not a supported content type.");
+            return;
+        }
+
         val serviceFactory = new DefaultCreateBookServiceFactory();
         CreateBookService createBookService;
         try {
