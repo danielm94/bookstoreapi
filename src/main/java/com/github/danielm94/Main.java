@@ -10,6 +10,7 @@ import com.github.danielm94.server.BookServer;
 import com.github.danielm94.server.executors.BookServerExecutor;
 import com.github.danielm94.server.handlers.SimpleResponseHandler;
 import com.github.danielm94.server.handlers.book.BookHandler;
+import com.github.danielm94.server.handlers.book.httpmethod.factory.DefaultHttpMethodBookHandlerFactory;
 import com.sun.net.httpserver.HttpHandler;
 import lombok.val;
 
@@ -49,7 +50,7 @@ public class Main {
             HttpHandler handler;
             try {
                 UUID bookUUID = UUID.fromString(bookId);
-                handler = new BookHandler();
+                handler = new BookHandler(new DefaultHttpMethodBookHandlerFactory());
                 context.getAttributes().put(BOOK_ID.toString(), bookUUID);
             } catch (IllegalArgumentException e) {
                 handler = new SimpleResponseHandler(HttpURLConnection.HTTP_BAD_REQUEST, bookId + " is not a valid UUID.");
@@ -59,7 +60,7 @@ public class Main {
         });
 
         val bookContext = server.createContext(BOOK_STORE_API_ENDPOINT);
-        bookContext.setHandler(new BookHandler());
+        bookContext.setHandler(new BookHandler(new DefaultHttpMethodBookHandlerFactory()));
 
         return server;
     }
