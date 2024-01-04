@@ -15,6 +15,8 @@ import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 
 @AllArgsConstructor
 public class DeleteBookHandler implements HttpMethodBookHandler {
+    public static final int MISSING_ID_STATUS_CODE = HTTP_BAD_REQUEST;
+    public static final String MISSING_UUID_RESPONSE_BODY = "You must specify the UUID of the book you wish to delete in the URI.";
     @NonNull
     private DeleteBookService deleteService;
 
@@ -22,7 +24,7 @@ public class DeleteBookHandler implements HttpMethodBookHandler {
     public void handle(@NonNull HttpExchange exchange) {
         val attributes = exchange.getHttpContext().getAttributes();
         if (!hasAttribute(exchange, BOOK_ID)) {
-            sendResponse(exchange, HTTP_BAD_REQUEST, "You must specify the UUID of the book you wish to delete in the URI.");
+            sendResponse(exchange, MISSING_ID_STATUS_CODE, MISSING_UUID_RESPONSE_BODY);
             return;
         }
 
