@@ -13,8 +13,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import static com.github.danielm94.server.handlers.book.httpmethod.DeleteBookHandler.MISSING_ID_STATUS_CODE;
+import static com.github.danielm94.server.handlers.book.httpmethod.DeleteBookHandler.MISSING_UUID_RESPONSE_BODY;
 import static com.github.danielm94.server.requestdata.method.HttpMethod.DELETE;
-import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SuppressWarnings("DataFlowIssue")
@@ -35,14 +36,25 @@ public class DeleteBookHandlerIntegrationTest {
     }
 
     @Test
-    void handleShouldSendResponseToClientIfNoBookIDIsSpecified() throws IOException {
+    void handleShouldSendCorrectStatusCodeToClientIfNoBookIDIsSpecified() throws IOException {
         deleteBookHandler.handle(exchange);
 
         val response = getResponseString(outputStream);
 
         assertThat(response)
                 .as("Response to client should contain correct status code.")
-                .contains(String.valueOf(HTTP_BAD_REQUEST));
+                .contains(String.valueOf(MISSING_ID_STATUS_CODE));
+    }
+
+    @Test
+    void handleShouldSendCorrectMessageToClientIfNoBookIDIsSpecified() throws IOException {
+        deleteBookHandler.handle(exchange);
+
+        val response = getResponseString(outputStream);
+
+        assertThat(response)
+                .as("Response to client should contain correct message body.")
+                .contains(MISSING_UUID_RESPONSE_BODY);
     }
 
     private String getResponseString(ByteArrayOutputStream outputStream) throws IOException {
