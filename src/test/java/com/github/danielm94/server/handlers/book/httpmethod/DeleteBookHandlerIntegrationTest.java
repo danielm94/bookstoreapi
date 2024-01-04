@@ -18,7 +18,6 @@ import static com.github.danielm94.server.handlers.book.httpmethod.DeleteBookHan
 import static com.github.danielm94.server.requestdata.method.HttpMethod.DELETE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-@SuppressWarnings("DataFlowIssue")
 public class DeleteBookHandlerIntegrationTest {
     private ByteArrayOutputStream outputStream;
     private BookHttpExchange exchange;

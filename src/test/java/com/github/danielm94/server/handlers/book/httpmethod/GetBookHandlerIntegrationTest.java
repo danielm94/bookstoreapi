@@ -1,11 +1,9 @@
 package com.github.danielm94.server.handlers.book.httpmethod;
 
 import com.github.danielm94.server.context.BookContext;
-import com.github.danielm94.server.domain.book.serializer.factory.BookSerializerFactory;
 import com.github.danielm94.server.domain.book.serializer.factory.DefaultBookSerializerFactory;
 import com.github.danielm94.server.exchange.BookHttpExchange;
 import com.github.danielm94.server.services.read.BookRetrievalService;
-import com.github.danielm94.server.services.read.GetBookService;
 import lombok.val;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,18 +23,13 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 public class GetBookHandlerIntegrationTest {
     private GetBookHandler handler;
     private BookHttpExchange exchange;
-    private BookContext context;
-    private BookSerializerFactory serializerFactory;
-    private GetBookService bookService;
     private ByteArrayOutputStream outputStream;
 
     @BeforeEach
     void setUp() {
-        bookService = new BookRetrievalService();
-        serializerFactory = new DefaultBookSerializerFactory();
-        handler = new GetBookHandler(bookService, serializerFactory);
+        handler = new GetBookHandler(new BookRetrievalService(), new DefaultBookSerializerFactory());
         exchange = new BookHttpExchange();
-        context = new BookContext();
+        BookContext context = new BookContext();
         outputStream = new ByteArrayOutputStream();
 
         exchange.setRequestMethod(GET.toString());

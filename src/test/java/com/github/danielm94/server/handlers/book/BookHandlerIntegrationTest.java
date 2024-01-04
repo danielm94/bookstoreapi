@@ -2,7 +2,6 @@ package com.github.danielm94.server.handlers.book;
 
 import com.github.danielm94.server.exchange.BookHttpExchange;
 import com.github.danielm94.server.handlers.book.httpmethod.factory.DefaultHttpMethodBookHandlerFactory;
-import com.github.danielm94.server.handlers.book.httpmethod.factory.HttpMethodBookHandlerFactory;
 import lombok.val;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,19 +16,16 @@ import static com.github.danielm94.server.requestdata.method.HttpMethod.OPTIONS;
 import static java.net.HttpURLConnection.HTTP_BAD_METHOD;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-@SuppressWarnings("DataFlowIssue")
 public class BookHandlerIntegrationTest {
     private ByteArrayOutputStream outputStream;
-    private HttpMethodBookHandlerFactory factory;
     private BookHttpExchange exchange;
     private BookHandler bookHandler;
 
     @BeforeEach
     void setUp() {
         outputStream = new ByteArrayOutputStream();
-        factory = new DefaultHttpMethodBookHandlerFactory();
         exchange = new BookHttpExchange();
-        bookHandler = new BookHandler(factory);
+        bookHandler = new BookHandler(new DefaultHttpMethodBookHandlerFactory());
 
         exchange.setResponseBody(outputStream);
     }
