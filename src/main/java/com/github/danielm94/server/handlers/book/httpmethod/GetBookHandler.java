@@ -21,29 +21,48 @@ import static java.net.HttpURLConnection.HTTP_NOT_ACCEPTABLE;
 
 @AllArgsConstructor
 public class GetBookHandler implements HttpMethodBookHandler {
+    public static final int MISSING_ACCEPT_HEADER_STATUS_CODE = HTTP_BAD_REQUEST;
+    public static final String MISSING_ACCEPT_HEADER_MESSAGE = "You must include the Accept header in your request.";
+    public static final int UNSUPPORTED_CONTENT_TYPE_STATUS_CODE = HTTP_BAD_REQUEST;
+    public static final int UNSUPPORTED_SERIALIZER_FORMAT_STATUS_CODE = HTTP_NOT_ACCEPTABLE;
     @NonNull
     private GetBookService bookService;
     @NonNull
     private BookSerializerFactory factory;
 
+    public static String getUnsupportedContentTypeResponseBody(String acceptHeaderValue) {
+        return acceptHeaderValue + " is not a supported content type.";
+    }
+
+    public static String getUnsupportedSerializerFormatResponseBody(ContentType contentType) {
+        return "Server does not support formatting the books into " + contentType;
+    }
+
     @Override
     public void handle(@NonNull HttpExchange exchange) {
         val headers = exchange.getRequestHeaders();
-        val accept = headers.get(ACCEPT.toString()).getFirst();
+        val acceptHeaderValues = headers.get(ACCEPT.toString());
+
+        if (acceptHeaderValues == null) {
+            sendResponse(exchange, MISSING_ACCEPT_HEADER_STATUS_CODE, MISSING_ACCEPT_HEADER_MESSAGE);
+            return;
+        }
+
+        val acceptHeaderValue = acceptHeaderValues.getFirst();
 
         ContentType contentType;
         try {
-            contentType = getContentTypeFromString(accept);
+            contentType = getContentTypeFromString(acceptHeaderValue);
         } catch (UnsupportedContentTypeException e) {
-            sendResponse(exchange, HTTP_BAD_REQUEST, accept + " is not a supported content type.");
+            sendResponse(exchange, UNSUPPORTED_CONTENT_TYPE_STATUS_CODE, getUnsupportedContentTypeResponseBody(acceptHeaderValue));
             return;
         }
-        
+
         BookSerializer serializer;
         try {
             serializer = factory.getSerializer(contentType);
         } catch (UnsupportedContentTypeException e) {
-            sendResponse(exchange, HTTP_NOT_ACCEPTABLE, "Server does not support formatting the books into " + contentType);
+            sendResponse(exchange, UNSUPPORTED_SERIALIZER_FORMAT_STATUS_CODE, getUnsupportedSerializerFormatResponseBody(contentType));
             return;
         }
 
