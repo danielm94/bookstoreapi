@@ -1,5 +1,6 @@
 package com.github.danielm94.server.handlers.book.httpmethod.factory;
 
+import com.github.danielm94.server.domain.book.serializer.factory.DefaultBookSerializerFactory;
 import com.github.danielm94.server.handlers.book.httpmethod.*;
 import com.github.danielm94.server.requestdata.method.HttpMethod;
 import com.github.danielm94.server.requestdata.method.UnsupportedHttpMethodException;
@@ -11,7 +12,7 @@ public class DefaultHttpMethodBookHandlerFactory implements HttpMethodBookHandle
     @Override
     public HttpMethodBookHandler getHandler(@NonNull HttpMethod method) throws UnsupportedHttpMethodException {
         return switch (method) {
-            case GET, HEAD -> new GetBookHandler(new BookRetrievalService());
+            case GET, HEAD -> new GetBookHandler(new BookRetrievalService(), new DefaultBookSerializerFactory());
             case PUT -> new PutBookHandler();
             case POST -> new PostBookHandler();
             case DELETE -> new DeleteBookHandler(new BookRemovalService());

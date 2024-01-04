@@ -1,7 +1,7 @@
 package com.github.danielm94.server.handlers.book.httpmethod;
 
 import com.github.danielm94.server.domain.book.serializer.BookSerializer;
-import com.github.danielm94.server.domain.book.serializer.factory.DefaultBookSerializerFactory;
+import com.github.danielm94.server.domain.book.serializer.factory.BookSerializerFactory;
 import com.github.danielm94.server.requestdata.content.ContentType;
 import com.github.danielm94.server.requestdata.content.UnsupportedContentTypeException;
 import com.github.danielm94.server.services.read.GetBookService;
@@ -23,6 +23,8 @@ import static java.net.HttpURLConnection.HTTP_NOT_ACCEPTABLE;
 public class GetBookHandler implements HttpMethodBookHandler {
     @NonNull
     private GetBookService bookService;
+    @NonNull
+    private BookSerializerFactory factory;
 
     @Override
     public void handle(@NonNull HttpExchange exchange) {
@@ -39,8 +41,7 @@ public class GetBookHandler implements HttpMethodBookHandler {
             sendResponse(exchange, HTTP_BAD_REQUEST, accept + " is not a supported content type.");
             return;
         }
-
-        val factory = new DefaultBookSerializerFactory();
+        
         BookSerializer serializer;
         try {
             serializer = factory.getSerializer(contentType);
