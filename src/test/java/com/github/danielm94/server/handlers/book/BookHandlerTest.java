@@ -93,6 +93,7 @@ public class BookHandlerTest {
         when(exchange.getRequestMethod()).thenReturn(unsupportedMethod.toString());
         when(factory.getHandler(any())).thenThrow(new UnsupportedHttpMethodException(unsupportedMethod));
 
+        bookHandler.handle(exchange);
         verify(httpMethodBookHandler, never()).handle(any(HttpExchange.class));
     }
 }
