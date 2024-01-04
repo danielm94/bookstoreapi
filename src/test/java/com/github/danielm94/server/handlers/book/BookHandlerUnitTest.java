@@ -22,7 +22,7 @@ import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 @SuppressWarnings("DataFlowIssue")
-public class BookHandlerTest {
+public class BookHandlerUnitTest {
 
     private BookHandler bookHandler;
     @Mock
