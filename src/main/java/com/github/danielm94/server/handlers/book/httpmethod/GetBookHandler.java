@@ -28,9 +28,6 @@ public class GetBookHandler implements HttpMethodBookHandler {
 
     @Override
     public void handle(@NonNull HttpExchange exchange) {
-        val attributes = exchange.getHttpContext().getAttributes();
-        val resourceId = (UUID) attributes.get(BOOK_ID.toString());
-
         val headers = exchange.getRequestHeaders();
         val accept = headers.get(ACCEPT.toString()).getFirst();
 
@@ -50,11 +47,14 @@ public class GetBookHandler implements HttpMethodBookHandler {
             return;
         }
 
+        val attributes = exchange.getHttpContext().getAttributes();
+        val resourceId = (UUID) attributes.get(BOOK_ID.toString());
+
         if (resourceId == null) {
             bookService.getAll(exchange, serializer);
         } else {
             attributes.remove(BOOK_ID.toString());
-            bookService.getAllById(exchange, serializer, resourceId);
+            bookService.getById(exchange, serializer, resourceId);
         }
     }
 }
