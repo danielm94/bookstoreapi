@@ -9,5 +9,5 @@ import java.util.UUID;
 public interface GetBookService {
     void getAll(@NonNull HttpExchange exchange, @NonNull BookSerializer bookSerializer);
 
-    void getAllById(@NonNull HttpExchange exchange, @NonNull BookSerializer bookSerializer, @NonNull UUID uuid);
+    void getById(@NonNull HttpExchange exchange, @NonNull BookSerializer bookSerializer, @NonNull UUID uuid);
 }

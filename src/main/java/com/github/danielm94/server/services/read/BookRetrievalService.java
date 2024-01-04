@@ -78,7 +78,7 @@ public class BookRetrievalService implements GetBookService {
     }
 
     @Override
-    public void getAllById(@NonNull HttpExchange exchange, @NonNull BookSerializer serializer, @NonNull UUID uuid) {
+    public void getById(@NonNull HttpExchange exchange, @NonNull BookSerializer serializer, @NonNull UUID uuid) {
         ResultSet resultSet;
         try {
             resultSet = getBook(uuid);
