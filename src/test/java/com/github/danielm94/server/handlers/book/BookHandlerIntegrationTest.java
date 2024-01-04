@@ -35,7 +35,7 @@ public class BookHandlerIntegrationTest {
     }
 
     @Test
-    void bookHandlerShouldSendResponseToClientIfRequestUsesUnsupportedHttpMethod() throws IOException {
+    void bookHandlerShouldCorrectStatusCodeIfRequestUsesUnsupportedHttpMethod() throws IOException {
         exchange.setRequestMethod(OPTIONS.toString());
 
         bookHandler.handle(exchange);
@@ -45,6 +45,20 @@ public class BookHandlerIntegrationTest {
         assertThat(response)
                 .as("Response to client should contain correct status code.")
                 .contains(String.valueOf(HTTP_BAD_METHOD));
+    }
+
+    @Test
+    void bookHandlerShouldCorrectMessageBodyIfRequestUsesUnsupportedHttpMethod() throws IOException {
+        val unsupportedHttpMethod = OPTIONS;
+        exchange.setRequestMethod(unsupportedHttpMethod.toString());
+
+        bookHandler.handle(exchange);
+
+        val response = getResponseString(outputStream);
+
+        assertThat(response)
+                .as("Response to client should contain correct message.")
+                .contains(BookHandler.getUnsupportedHTTPMethodMessage(unsupportedHttpMethod));
     }
 
     private String getResponseString(ByteArrayOutputStream outputStream) throws IOException {
