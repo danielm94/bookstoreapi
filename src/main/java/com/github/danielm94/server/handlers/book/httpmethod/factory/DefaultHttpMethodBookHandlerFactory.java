@@ -3,6 +3,7 @@ package com.github.danielm94.server.handlers.book.httpmethod.factory;
 import com.github.danielm94.server.handlers.book.httpmethod.*;
 import com.github.danielm94.server.requestdata.method.HttpMethod;
 import com.github.danielm94.server.requestdata.method.UnsupportedHttpMethodException;
+import com.github.danielm94.server.services.delete.BookRemovalService;
 import lombok.NonNull;
 
 public class DefaultHttpMethodBookHandlerFactory implements HttpMethodBookHandlerFactory {
@@ -12,7 +13,7 @@ public class DefaultHttpMethodBookHandlerFactory implements HttpMethodBookHandle
             case GET, HEAD -> new GetBookHandler();
             case PUT -> new PutBookHandler();
             case POST -> new PostBookHandler();
-            case DELETE -> new DeleteBookHandler();
+            case DELETE -> new DeleteBookHandler(new BookRemovalService());
             case PATCH -> new PatchBookHandler();
             default -> throw new UnsupportedHttpMethodException(method);
         };
