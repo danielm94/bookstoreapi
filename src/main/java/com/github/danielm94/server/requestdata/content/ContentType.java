@@ -11,6 +11,7 @@ import java.util.Map;
 @Getter
 @AllArgsConstructor
 public enum ContentType {
+    ANY("*/*"),
     APPLICATION_JSON("application/json"),
     TEXT_PLAIN("text/plain");
     @Getter(AccessLevel.NONE)
