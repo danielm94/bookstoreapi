@@ -23,7 +23,7 @@ import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 @SuppressWarnings("DataFlowIssue")
-class DeleteBookHandlerTest {
+class DeleteBookHandlerUnitTest {
     @Mock
     private HttpContext mockContext;
     @Mock
