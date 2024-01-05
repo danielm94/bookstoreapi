@@ -6,6 +6,7 @@ import com.github.danielm94.server.requestdata.method.HttpMethod;
 import com.github.danielm94.server.requestdata.method.UnsupportedHttpMethodException;
 import com.github.danielm94.server.services.delete.BookRemovalService;
 import com.github.danielm94.server.services.read.BookRetrievalService;
+import com.github.danielm94.server.services.update.factory.DefaultPatchBookServiceFactory;
 import lombok.NonNull;
 
 public class DefaultHttpMethodBookHandlerFactory implements HttpMethodBookHandlerFactory {
@@ -16,7 +17,7 @@ public class DefaultHttpMethodBookHandlerFactory implements HttpMethodBookHandle
             case PUT -> new PutBookHandler();
             case POST -> new PostBookHandler();
             case DELETE -> new DeleteBookHandler(new BookRemovalService());
-            case PATCH -> new PatchBookHandler();
+            case PATCH -> new PatchBookHandler(new DefaultPatchBookServiceFactory());
             default -> throw new UnsupportedHttpMethodException(method);
         };
     }
