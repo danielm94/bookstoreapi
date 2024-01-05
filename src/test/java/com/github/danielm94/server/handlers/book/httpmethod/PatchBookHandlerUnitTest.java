@@ -119,6 +119,7 @@ class PatchBookHandlerUnitTest {
     void handleShouldNotProcessRequestIfExchangeIsMissingRequestBody() {
         val uuid = UUID.randomUUID();
         attributeMap.put(BOOK_ID.toString(), uuid);
+        headers.add(CONTENT_LENGTH.toString(), "0");
 
         handler.handle(mockExchange);
 
