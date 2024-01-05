@@ -23,19 +23,33 @@ import static java.util.UUID.fromString;
 
 @AllArgsConstructor
 public class PatchBookHandler implements HttpMethodBookHandler {
+    public static final int NO_UUID_INCLUDED_STATUS_CODE = HTTP_BAD_REQUEST;
+    public static final String NO_UUID_INCLUDED_RESPONSE_MESSAGE = "You must specify the UUID of the book in the path.";
+    public static final int NO_REQUEST_BODY_STATUS_CODE = HTTP_BAD_REQUEST;
+    public static final String NO_REQUEST_BODY_RESPONSE_MESSAGE = "You must include a body of some type in your request in order to patch a book.";
+    public static final int UNSUPPORTED_CONTENT_TYPE_STATUS_CODE = HTTP_BAD_REQUEST;
+    public static final int NO_PATCH_SERVICE_FOR_CONTENT_TYPE_STATUS_CODE = HTTP_UNSUPPORTED_TYPE;
     @NonNull
     private final PatchBookServiceFactory factory;
 
+    public static String getNoPatchServiceForContentTypeResponseMessage(HttpExchange exchange, ContentType contentType) {
+        return format("Server does not support content type [%s] for http method [%s] at the endpoint [%s].",
+                contentType, PATCH, exchange.getHttpContext().getPath());
+    }
+
+    public static String getUnsupportedContentTypeResponseMessage(String contentTypeHeaderValue) {
+        return contentTypeHeaderValue + " is not a supported content type.";
+    }
 
     @Override
     public void handle(@NonNull HttpExchange exchange) {
         if (!hasAttribute(exchange, BOOK_ID)) {
-            sendResponse(exchange, HTTP_BAD_REQUEST, "You must specify the UUID of the book in the path.");
+            sendResponse(exchange, NO_UUID_INCLUDED_STATUS_CODE, NO_UUID_INCLUDED_RESPONSE_MESSAGE);
             return;
         }
 
         if (!hasRequestBody(exchange)) {
-            sendResponse(exchange, HTTP_BAD_REQUEST, "You must include a body of some type in your request in order to patch a book.");
+            sendResponse(exchange, NO_REQUEST_BODY_STATUS_CODE, NO_REQUEST_BODY_RESPONSE_MESSAGE);
             return;
         }
 
@@ -46,7 +60,7 @@ public class PatchBookHandler implements HttpMethodBookHandler {
         try {
             contentType = getContentTypeFromString(contentTypeHeaderValue);
         } catch (UnsupportedContentTypeException e) {
-            sendResponse(exchange, HTTP_BAD_REQUEST, contentTypeHeaderValue + " is not a supported content type.");
+            sendResponse(exchange, UNSUPPORTED_CONTENT_TYPE_STATUS_CODE, getUnsupportedContentTypeResponseMessage(contentTypeHeaderValue));
             return;
         }
 
@@ -54,9 +68,7 @@ public class PatchBookHandler implements HttpMethodBookHandler {
         try {
             service = factory.getService(contentType);
         } catch (UnsupportedContentTypeException e) {
-            val responseMessage = format("Server does not support content type [%s] for http method [%s] at the endpoint [%s].",
-                    contentType, PATCH, exchange.getHttpContext().getPath());
-            sendResponse(exchange, HTTP_UNSUPPORTED_TYPE, responseMessage);
+            sendResponse(exchange, NO_PATCH_SERVICE_FOR_CONTENT_TYPE_STATUS_CODE, getNoPatchServiceForContentTypeResponseMessage(exchange, contentType));
             return;
         }
 
