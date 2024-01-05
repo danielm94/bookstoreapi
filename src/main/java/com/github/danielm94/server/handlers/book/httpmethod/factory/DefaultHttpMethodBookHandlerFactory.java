@@ -4,6 +4,7 @@ import com.github.danielm94.server.domain.book.serializer.factory.DefaultBookSer
 import com.github.danielm94.server.handlers.book.httpmethod.*;
 import com.github.danielm94.server.requestdata.method.HttpMethod;
 import com.github.danielm94.server.requestdata.method.UnsupportedHttpMethodException;
+import com.github.danielm94.server.services.create.factory.DefaultCreateBookServiceFactory;
 import com.github.danielm94.server.services.delete.BookRemovalService;
 import com.github.danielm94.server.services.read.BookRetrievalService;
 import com.github.danielm94.server.services.update.factory.DefaultPatchBookServiceFactory;
@@ -15,7 +16,7 @@ public class DefaultHttpMethodBookHandlerFactory implements HttpMethodBookHandle
         return switch (method) {
             case GET, HEAD -> new GetBookHandler(new BookRetrievalService(), new DefaultBookSerializerFactory());
             case PUT -> new PutBookHandler();
-            case POST -> new PostBookHandler();
+            case POST -> new PostBookHandler(new DefaultCreateBookServiceFactory());
             case DELETE -> new DeleteBookHandler(new BookRemovalService());
             case PATCH -> new PatchBookHandler(new DefaultPatchBookServiceFactory());
             default -> throw new UnsupportedHttpMethodException(method);
