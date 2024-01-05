@@ -15,15 +15,12 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
 
-import static com.github.danielm94.server.requestdata.headers.HttpHeader.*;
+import static com.github.danielm94.server.requestdata.headers.HttpHeader.CONTENT_LENGTH;
 
 @Getter
 @Setter
 public class BookHttpExchange extends HttpExchange {
-    private final Map<String, Object> attributes = new HashMap<>();
     private String requestMethod;
     private URI requestURI;
     private Headers requestHeaders = new Headers();
@@ -130,12 +127,12 @@ public class BookHttpExchange extends HttpExchange {
 
     @Override
     public Object getAttribute(String name) {
-        return attributes.get(name);
+        return httpContext.getAttributes().get(name);
     }
 
     @Override
     public void setAttribute(String name, Object value) {
-        attributes.put(name, value);
+        httpContext.getAttributes().put(name, value);
     }
 
     @Override
