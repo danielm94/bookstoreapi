@@ -23,21 +23,21 @@ import static java.net.HttpURLConnection.HTTP_UNSUPPORTED_TYPE;
 public class PutBookHandler implements HttpMethodBookHandler {
     @Override
     public void handle(@NonNull HttpExchange exchange) {
-        if (!hasRequestBody(exchange)) {
-            sendResponse(exchange, HTTP_BAD_REQUEST, "You must include a body in the request.");
-            return;
-        }
-
         if (!hasAttribute(exchange, BOOK_ID)) {
             sendResponse(exchange, HTTP_BAD_REQUEST, "You must specify the UUID of the book you wish to update in the URI.");
             return;
         }
-
-        val contentTypeHeaderValue = exchange.getRequestHeaders().getFirst(CONTENT_TYPE.toString());
+        if (!hasRequestBody(exchange)) {
+            sendResponse(exchange, HTTP_BAD_REQUEST, "You must include a body in the request.");
+            return;
+        }
         if (!hasHeader(exchange, CONTENT_TYPE)) {
             sendResponse(exchange, HTTP_BAD_REQUEST, "You must include a Content-Type header in your request.");
             return;
         }
+
+        val headers = exchange.getRequestHeaders();
+        val contentTypeHeaderValue = headers.getFirst(CONTENT_TYPE.toString());
 
         ContentType contentType;
         try {
