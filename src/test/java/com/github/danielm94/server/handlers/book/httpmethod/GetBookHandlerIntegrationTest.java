@@ -5,14 +5,11 @@ import com.github.danielm94.server.domain.book.serializer.factory.DefaultBookSer
 import com.github.danielm94.server.exchange.BookHttpExchange;
 import com.github.danielm94.server.services.read.BookRetrievalService;
 import lombok.val;
-import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 import static com.github.danielm94.server.handlers.book.httpmethod.GetBookHandler.*;
 import static com.github.danielm94.server.requestdata.content.ContentType.TEXT_PLAIN;
@@ -42,7 +39,7 @@ public class GetBookHandlerIntegrationTest {
     void clientShouldReceiveCorrectStatusCodeWhenTheySendRequestWithNoAcceptHeader() throws IOException {
         handler.handle(exchange);
 
-        val response = getResponseString(outputStream);
+        val response = outputStream.toString();
         val responseCode = GetBookHandler.MISSING_ACCEPT_HEADER_STATUS_CODE;
         assertThat(response)
                 .as("Client should receive status code of %s when they do not include Accept header.", responseCode)
@@ -53,7 +50,7 @@ public class GetBookHandlerIntegrationTest {
     void clientShouldReceiveCorrectResponseBodyWhenTheySendRequestWithNoAcceptHeader() throws IOException {
         handler.handle(exchange);
 
-        val response = getResponseString(outputStream);
+        val response = outputStream.toString();
         val responseBody = MISSING_ACCEPT_HEADER_MESSAGE;
         assertThat(response)
                 .as("Client should receive response body [%s] when they do not include Accept header.", responseBody)
@@ -66,7 +63,7 @@ public class GetBookHandlerIntegrationTest {
         exchange.getRequestHeaders().add(ACCEPT.toString(), acceptHeaderValue);
         handler.handle(exchange);
 
-        val response = getResponseString(outputStream);
+        val response = outputStream.toString();
         val responseCode = UNSUPPORTED_CONTENT_TYPE_STATUS_CODE;
         assertThat(response)
                 .as("Client should receive status code of %s when they provide an unsupported content type.", responseCode)
@@ -79,7 +76,7 @@ public class GetBookHandlerIntegrationTest {
         exchange.getRequestHeaders().add(ACCEPT.toString(), acceptHeaderValue);
         handler.handle(exchange);
 
-        val response = getResponseString(outputStream);
+        val response = outputStream.toString();
         val responseBody = getUnsupportedContentTypeResponseBody(acceptHeaderValue);
         assertThat(response)
                 .as("Client should receive response body of [%s] when they provide an unsupported content type.", responseBody)
@@ -91,7 +88,7 @@ public class GetBookHandlerIntegrationTest {
         exchange.getRequestHeaders().add(ACCEPT.toString(), TEXT_PLAIN.toString());
         handler.handle(exchange);
 
-        val response = getResponseString(outputStream);
+        val response = outputStream.toString();
         val statusCode = UNSUPPORTED_SERIALIZER_FORMAT_STATUS_CODE;
         assertThat(response)
                 .as("Client should receive status code of %s when they provide an unsupported content type.", statusCode)
@@ -104,17 +101,12 @@ public class GetBookHandlerIntegrationTest {
         exchange.getRequestHeaders().add(ACCEPT.toString(), unsupportedSerializerContentType.toString());
         handler.handle(exchange);
 
-        val response = getResponseString(outputStream);
+        val response = outputStream.toString();
         val responseBody = getUnsupportedSerializerFormatResponseBody(unsupportedSerializerContentType);
         assertThat(response)
                 .as("Client should receive response body of [%s] when they provide an unsupported content type.", responseBody)
                 .contains(responseBody);
     }
 
-    private String getResponseString(ByteArrayOutputStream outputStream) throws IOException {
-        val inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-        val response = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-        outputStream.close();
-        return response;
-    }
+
 }

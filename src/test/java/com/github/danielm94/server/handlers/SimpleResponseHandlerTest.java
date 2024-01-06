@@ -2,18 +2,16 @@ package com.github.danielm94.server.handlers;
 
 import com.github.danielm94.server.exchange.BookHttpExchange;
 import lombok.val;
-import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 import static com.github.danielm94.server.handlers.SimpleResponseHandler.sendResponse;
-import static com.github.danielm94.server.requestdata.headers.HttpHeader.*;
+import static com.github.danielm94.server.requestdata.headers.HttpHeader.CONTENT_LENGTH;
 import static com.github.danielm94.server.requestdata.method.HttpMethod.GET;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -42,7 +40,7 @@ class SimpleResponseHandlerTest {
         val contentLengthLine = CONTENT_LENGTH + ": " + bodyContentLength;
 
         sendResponse(exchange, statusCode, body);
-        val responseStr = getResponseString();
+        val responseStr = outputStream.toString();
 
         assertThat(responseStr)
                 .as("Response should contain the status code, the body content, and a correct Content-Length header")
@@ -57,7 +55,7 @@ class SimpleResponseHandlerTest {
         val contentLengthLine = CONTENT_LENGTH + ": 0";
 
         sendResponse(exchange, statusCode, null);
-        val responseStr = getResponseString();
+        val responseStr = outputStream.toString();
 
         assertThat(responseStr)
                 .as("Response with no body should contain the correct status code, a Content-Length header set to 0, and end with an empty line to signify the end of the headers section")
@@ -84,11 +82,4 @@ class SimpleResponseHandlerTest {
         verify(exchange.getResponseBody()).write(any(byte[].class));
     }
 
-
-    private String getResponseString() throws IOException {
-        val inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-        val response = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-        if (outputStream != null) outputStream.close();
-        return response;
-    }
 }
