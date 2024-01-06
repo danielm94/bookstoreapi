@@ -6,5 +6,5 @@ import com.github.danielm94.server.services.create.CreateBookService;
 import lombok.NonNull;
 
 public interface CreateBookServiceFactory {
-    CreateBookService getServiceForContentType(@NonNull ContentType contentType) throws UnsupportedContentTypeException;
+    CreateBookService getService(@NonNull ContentType contentType) throws UnsupportedContentTypeException;
 }

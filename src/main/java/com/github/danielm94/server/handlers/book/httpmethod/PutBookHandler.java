@@ -51,7 +51,7 @@ public class PutBookHandler implements HttpMethodBookHandler {
 
         PutBookService putBookService;
         try {
-            putBookService = factory.getPutBookService(contentType);
+            putBookService = factory.getService(contentType);
         } catch (UnsupportedContentTypeException e) {
             val responseMessage = format("Server does not support content type [%s] for http method [%s] at the endpoint [%s].",
                     contentType, PUT, exchange.getHttpContext().getPath());

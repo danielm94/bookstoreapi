@@ -48,7 +48,7 @@ public class PostBookHandler implements HttpMethodBookHandler {
 
         CreateBookService createBookService;
         try {
-            createBookService = serviceFactory.getServiceForContentType(contentType);
+            createBookService = serviceFactory.getService(contentType);
         } catch (UnsupportedContentTypeException e) {
             val responseMessage = format("Server does not support content type [%s] for http method [%s] at the endpoint [%s].",
                     contentType, POST, exchange.getHttpContext().getPath());

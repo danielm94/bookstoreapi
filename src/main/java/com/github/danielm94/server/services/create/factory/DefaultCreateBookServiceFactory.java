@@ -13,7 +13,7 @@ import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKN
 
 public class DefaultCreateBookServiceFactory implements CreateBookServiceFactory {
     @Override
-    public CreateBookService getServiceForContentType(@NonNull ContentType contentType) throws UnsupportedContentTypeException {
+    public CreateBookService getService(@NonNull ContentType contentType) throws UnsupportedContentTypeException {
         return switch (contentType) {
             case APPLICATION_JSON -> {
                 val objectMapper = new ObjectMapper();

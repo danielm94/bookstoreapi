@@ -13,7 +13,7 @@ import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKN
 
 public class DefaultPutBookServiceFactory implements PutBookServiceFactory {
     @Override
-    public PutBookService getPutBookService(@NonNull ContentType contentType) throws UnsupportedContentTypeException {
+    public PutBookService getService(@NonNull ContentType contentType) throws UnsupportedContentTypeException {
         return switch (contentType) {
             case APPLICATION_JSON -> {
                 val objectMapper = new ObjectMapper();
