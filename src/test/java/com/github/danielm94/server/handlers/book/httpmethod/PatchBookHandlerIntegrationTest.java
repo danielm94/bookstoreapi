@@ -68,6 +68,22 @@ class PatchBookHandlerIntegrationTest {
     }
 
     @Test
+    void responseShouldBeSentToClientIfContentTypeIsMissing() {
+        exchange.setAttribute(BOOK_ID.toString(), UUID.randomUUID());
+
+        headers.add(CONTENT_LENGTH.toString(), "10");
+
+
+        handler.handle(exchange);
+
+        val response = outputStream.toString();
+        assertThat(response)
+                .as("Server sends correct response to client if the content type header is missing.")
+                .contains(String.valueOf(MISSING_CONTENT_TYPE_STATUS_CODE))
+                .contains(MISSING_CONTENT_TYPE_RESPONSE_MESSAGE);
+    }
+
+    @Test
     void responseShouldBeSentToClientIfContentTypeIsUnlisted() {
         exchange.setAttribute(BOOK_ID.toString(), UUID.randomUUID());
 

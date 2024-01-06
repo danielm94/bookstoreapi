@@ -141,6 +141,21 @@ class PatchBookHandlerUnitTest {
     }
 
     @Test
+    void handleShouldNotProcessRequestIfExchangeHasInvalidContentType() {
+        val uuid = UUID.randomUUID();
+        attributeMap.put(BOOK_ID.toString(), uuid);
+
+        headers.add(CONTENT_LENGTH.toString(), "100");
+        headers.add(CONTENT_TYPE.toString(), "not real");
+
+        assertThatCode(() -> handler.handle(mockExchange))
+                .as("Handle method should deal with the UnsupportedContentTypeException when the exchange has an invalid content type.")
+                .doesNotThrowAnyException();
+
+        verify(mockService, never()).patch(any(HttpExchange.class), any(UUID.class));
+    }
+
+    @Test
     void handleShouldNotProcessRequestIfExchangeHasUnsupportedContentType() throws UnsupportedContentTypeException {
         val uuid = UUID.randomUUID();
         attributeMap.put(BOOK_ID.toString(), uuid);

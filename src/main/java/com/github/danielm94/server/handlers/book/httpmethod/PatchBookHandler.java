@@ -14,8 +14,7 @@ import static com.github.danielm94.server.handlers.SimpleResponseHandler.sendRes
 import static com.github.danielm94.server.requestdata.content.ContentType.getContentTypeFromString;
 import static com.github.danielm94.server.requestdata.headers.HttpHeader.CONTENT_TYPE;
 import static com.github.danielm94.server.requestdata.method.HttpMethod.PATCH;
-import static com.github.danielm94.server.requestdata.validation.RequestDataValidator.hasAttribute;
-import static com.github.danielm94.server.requestdata.validation.RequestDataValidator.hasRequestBody;
+import static com.github.danielm94.server.requestdata.validation.RequestDataValidator.*;
 import static java.lang.String.format;
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_UNSUPPORTED_TYPE;
@@ -29,6 +28,8 @@ public class PatchBookHandler implements HttpMethodBookHandler {
     public static final String NO_REQUEST_BODY_RESPONSE_MESSAGE = "You must include a body of some type in your request in order to patch a book.";
     public static final int UNSUPPORTED_CONTENT_TYPE_STATUS_CODE = HTTP_BAD_REQUEST;
     public static final int NO_PATCH_SERVICE_FOR_CONTENT_TYPE_STATUS_CODE = HTTP_UNSUPPORTED_TYPE;
+    public static final int MISSING_CONTENT_TYPE_STATUS_CODE = HTTP_BAD_REQUEST;
+    public static final String MISSING_CONTENT_TYPE_RESPONSE_MESSAGE = "You must include a Content-Type header in your request.";
     @NonNull
     private final PatchBookServiceFactory factory;
 
@@ -50,6 +51,11 @@ public class PatchBookHandler implements HttpMethodBookHandler {
 
         if (!hasRequestBody(exchange)) {
             sendResponse(exchange, NO_REQUEST_BODY_STATUS_CODE, NO_REQUEST_BODY_RESPONSE_MESSAGE);
+            return;
+        }
+
+        if (!hasHeader(exchange, CONTENT_TYPE)) {
+            sendResponse(exchange, MISSING_CONTENT_TYPE_STATUS_CODE, MISSING_CONTENT_TYPE_RESPONSE_MESSAGE);
             return;
         }
 
