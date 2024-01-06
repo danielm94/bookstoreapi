@@ -6,14 +6,16 @@ import com.github.danielm94.server.domain.book.serializer.BookSerializer;
 import com.github.danielm94.server.domain.book.serializer.JsonBookSerializer;
 import com.github.danielm94.server.requestdata.content.ContentType;
 import com.github.danielm94.server.requestdata.content.UnsupportedContentTypeException;
+import lombok.NonNull;
 import lombok.val;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
 import static com.github.danielm94.server.requestdata.content.ContentType.APPLICATION_JSON;
 
+//TODO: WRITE UNIT TEST CLASS FOR THIS
 public class DefaultBookSerializerFactory implements BookSerializerFactory {
     @Override
-    public BookSerializer getSerializer(ContentType contentType) throws UnsupportedContentTypeException {
+    public BookSerializer getSerializer(@NonNull ContentType contentType) throws UnsupportedContentTypeException {
         return switch (contentType) {
             case ANY -> getSerializer(APPLICATION_JSON);
             case APPLICATION_JSON -> {
