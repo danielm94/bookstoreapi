@@ -19,23 +19,20 @@ import static com.github.danielm94.server.requestdata.headers.HttpHeader.CONTENT
 import static com.github.danielm94.server.requestdata.method.HttpMethod.PATCH;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SuppressWarnings("DataFlowIssue")
 class PatchBookHandlerIntegrationTest {
     private Headers headers;
     private PatchBookHandler handler;
     private BookHttpExchange exchange;
-    private BookContext context;
     private ByteArrayOutputStream outputStream;
 
     @BeforeEach
     void setUp() {
         exchange = new BookHttpExchange();
         handler = new PatchBookHandler(new DefaultPatchBookServiceFactory());
-        context = new BookContext();
         outputStream = new ByteArrayOutputStream();
         headers = new Headers();
 
-        exchange.setHttpContext(context);
+        exchange.setHttpContext(new BookContext());
         exchange.setRequestMethod(PATCH.toString());
         exchange.setResponseBody(outputStream);
         exchange.setRequestHeaders(headers);
