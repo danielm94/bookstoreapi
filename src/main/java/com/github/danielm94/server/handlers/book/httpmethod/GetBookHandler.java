@@ -50,9 +50,9 @@ public class GetBookHandler implements HttpMethodBookHandler {
 
         val acceptHeaderValue = acceptHeaderValues.getFirst();
 
-        ContentType contentType;
+        ContentType acceptContentType;
         try {
-            contentType = getContentTypeFromString(acceptHeaderValue);
+            acceptContentType = getContentTypeFromString(acceptHeaderValue);
         } catch (UnsupportedContentTypeException e) {
             sendResponse(exchange, UNSUPPORTED_CONTENT_TYPE_STATUS_CODE, getUnsupportedContentTypeResponseBody(acceptHeaderValue));
             return;
@@ -60,9 +60,9 @@ public class GetBookHandler implements HttpMethodBookHandler {
 
         BookSerializer serializer;
         try {
-            serializer = factory.getSerializer(contentType);
+            serializer = factory.getSerializer(acceptContentType);
         } catch (UnsupportedContentTypeException e) {
-            sendResponse(exchange, UNSUPPORTED_SERIALIZER_FORMAT_STATUS_CODE, getUnsupportedSerializerFormatResponseBody(contentType));
+            sendResponse(exchange, UNSUPPORTED_SERIALIZER_FORMAT_STATUS_CODE, getUnsupportedSerializerFormatResponseBody(acceptContentType));
             return;
         }
 
