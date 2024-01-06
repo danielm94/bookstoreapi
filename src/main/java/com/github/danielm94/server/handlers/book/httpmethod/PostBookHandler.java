@@ -21,17 +21,32 @@ import static java.net.HttpURLConnection.HTTP_UNSUPPORTED_TYPE;
 
 @AllArgsConstructor
 public class PostBookHandler implements HttpMethodBookHandler {
+    public static final int NO_REQUEST_BODY_STATUS_CODE = HTTP_BAD_REQUEST;
+    public static final String NO_REQUEST_BODY_RESPONSE_MESSAGE = "You must include a body in the request.";
+    public static final int NO_CONTENT_TYPE_HEADER_STATUS_CODE = HTTP_BAD_REQUEST;
+    public static final String NO_CONTENT_TYPE_HEADER_RESPONSE_MESSAGE = "You must include a Content-Type header in your request.";
+    public static final int UNSUPPORTED_CONTENT_TYPE_STATUS_CODE = HTTP_BAD_REQUEST;
+    public static final int NO_SERVICE_FOR_REQUESTED_CONTENT_TYPE_STATUS_CODE = HTTP_UNSUPPORTED_TYPE;
     @NonNull
     private final CreateBookServiceFactory serviceFactory;
+
+    public static String getNoServiceForRequestContentTypeResponseMessage(HttpExchange exchange, ContentType contentType) {
+        return format("Server does not support content type [%s] for http method [%s] at the endpoint [%s].",
+                contentType, POST, exchange.getHttpContext().getPath());
+    }
+
+    public static String getUnsupportedContentTypeResponseMessage(String contentTypeHeaderValue) {
+        return contentTypeHeaderValue + " is not a supported content type.";
+    }
 
     @Override
     public void handle(@NonNull HttpExchange exchange) {
         if (!hasRequestBody(exchange)) {
-            sendResponse(exchange, HTTP_BAD_REQUEST, "You must include a body in the request.");
+            sendResponse(exchange, NO_REQUEST_BODY_STATUS_CODE, NO_REQUEST_BODY_RESPONSE_MESSAGE);
             return;
         }
         if (!hasHeader(exchange, CONTENT_TYPE)) {
-            sendResponse(exchange, HTTP_BAD_REQUEST, "You must include a Content-Type header in your request.");
+            sendResponse(exchange, NO_CONTENT_TYPE_HEADER_STATUS_CODE, NO_CONTENT_TYPE_HEADER_RESPONSE_MESSAGE);
             return;
         }
 
@@ -42,7 +57,7 @@ public class PostBookHandler implements HttpMethodBookHandler {
         try {
             contentType = getContentTypeFromString(contentTypeHeaderValue);
         } catch (UnsupportedContentTypeException e) {
-            sendResponse(exchange, HTTP_BAD_REQUEST, contentTypeHeaderValue + " is not a supported content type.");
+            sendResponse(exchange, UNSUPPORTED_CONTENT_TYPE_STATUS_CODE, getUnsupportedContentTypeResponseMessage(contentTypeHeaderValue));
             return;
         }
 
@@ -50,9 +65,7 @@ public class PostBookHandler implements HttpMethodBookHandler {
         try {
             createBookService = serviceFactory.getService(contentType);
         } catch (UnsupportedContentTypeException e) {
-            val responseMessage = format("Server does not support content type [%s] for http method [%s] at the endpoint [%s].",
-                    contentType, POST, exchange.getHttpContext().getPath());
-            sendResponse(exchange, HTTP_UNSUPPORTED_TYPE, responseMessage);
+            sendResponse(exchange, NO_SERVICE_FOR_REQUESTED_CONTENT_TYPE_STATUS_CODE, getNoServiceForRequestContentTypeResponseMessage(exchange, contentType));
             return;
         }
         createBookService.createBook(exchange);
