@@ -67,7 +67,7 @@ class PutBookHandlerUnitTest {
 
     @Test
     void nullPointerExceptionShouldBeThrownWhenPassingNullPatchBookServiceFactoryToConstructor() {
-        assertThatThrownBy(() -> new PatchBookHandler(null))
+        assertThatThrownBy(() -> new PutBookHandler(null))
                 .as("NullPointerException should be thrown if a null PatchBookServiceFactory is passed.")
                 .isInstanceOf(NullPointerException.class);
     }
