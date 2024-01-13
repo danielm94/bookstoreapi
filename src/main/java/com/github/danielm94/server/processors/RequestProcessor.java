@@ -1,5 +1,6 @@
 package com.github.danielm94.server.processors;
 
+import com.github.danielm94.server.parsers.OutputStreamRetrievalException;
 import com.github.danielm94.server.parsers.RequestDataParser;
 import com.github.danielm94.server.parsers.body.DefaultBodyParserStrategy;
 import com.github.danielm94.server.parsers.clientinput.DefaultClientInputParserStrategy;
@@ -39,19 +40,6 @@ public class RequestProcessor implements Runnable {
         }
     }
 
-    @Override
-    public void run() {
-        val parser = new RequestDataParser(contextMap, dynamicPaths,
-                new DefaultClientInputParserStrategy(),
-                new DefaultRequestLineParserStrategy(),
-                new DefaultHeaderParserStrategy(),
-                new DefaultBodyParserStrategy());
-        val exchange = parser.getHttpExchangeFromClientSocket(clientSocket);
-        val requestHandler = exchange.getHttpContext().getHandler();
-        handleRequest(requestHandler, exchange);
-        closeTheClientSocket();
-    }
-
     private void closeTheClientSocket() {
         try {
             clientSocket.close();
@@ -60,5 +48,27 @@ public class RequestProcessor implements Runnable {
                .withCause(e)
                .log("Failed to close client socket.");
         }
+    }
+
+    @Override
+    public void run() {
+        val parser = new RequestDataParser(contextMap, dynamicPaths,
+                new DefaultClientInputParserStrategy(),
+                new DefaultRequestLineParserStrategy(),
+                new DefaultHeaderParserStrategy(),
+                new DefaultBodyParserStrategy());
+
+        HttpExchange exchange;
+        try {
+            exchange = parser.getHttpExchangeFromClientSocket(clientSocket);
+        } catch (OutputStreamRetrievalException e) {
+            log.atWarning()
+               .withCause(e)
+               .log("Failed to get output stream from client socket.");
+            return;
+        }
+        val requestHandler = exchange.getHttpContext().getHandler();
+        handleRequest(requestHandler, exchange);
+        closeTheClientSocket();
     }
 }

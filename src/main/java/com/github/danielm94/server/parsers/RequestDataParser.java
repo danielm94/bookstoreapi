@@ -2,7 +2,6 @@ package com.github.danielm94.server.parsers;
 
 import com.github.danielm94.server.context.BookContext;
 import com.github.danielm94.server.exchange.BookHttpExchange;
-import com.github.danielm94.server.handlers.ExceptionHandler;
 import com.github.danielm94.server.handlers.SimpleResponseHandler;
 import com.github.danielm94.server.parsers.body.BodyParserStrategy;
 import com.github.danielm94.server.parsers.clientinput.ClientInputParserStrategy;
@@ -73,7 +72,7 @@ public class RequestDataParser {
         exchange.getHttpContext().setHandler(handler);
     }
 
-    public HttpExchange getHttpExchangeFromClientSocket(@NonNull Socket clientSocket) {
+    public HttpExchange getHttpExchangeFromClientSocket(@NonNull Socket clientSocket) throws OutputStreamRetrievalException {
         log.atFine().log("Processing new client request from socket: %s", clientSocket);
 
         val exchange = new BookHttpExchange();
@@ -82,8 +81,7 @@ public class RequestDataParser {
             log.atFine()
                .log("Successfully set the response body of the exchange to the client socket's output stream.");
         } catch (IOException e) {
-            setHandler(exchange, new ExceptionHandler("Could not get the output stream from the client socket.",e));
-            return exchange;
+            throw new OutputStreamRetrievalException("Could not get the output stream from the client socket.", e);
         }
 
         InputStream clientInputStream;
