@@ -9,17 +9,15 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
 
-import java.util.UUID;
-
 import static com.github.danielm94.server.exchange.Attributes.BOOK_ID;
 import static com.github.danielm94.server.handlers.SimpleResponseHandler.sendResponse;
-import static com.github.danielm94.server.requestdata.content.ContentType.getContentTypeFromString;
-import static com.github.danielm94.server.requestdata.headers.HttpHeader.CONTENT_TYPE;
+import static com.github.danielm94.server.requestdata.content.ContentType.*;
+import static com.github.danielm94.server.requestdata.headers.HttpHeader.*;
 import static com.github.danielm94.server.requestdata.method.HttpMethod.PUT;
 import static com.github.danielm94.server.requestdata.validation.RequestDataValidator.*;
 import static java.lang.String.format;
-import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
-import static java.net.HttpURLConnection.HTTP_UNSUPPORTED_TYPE;
+import static java.net.HttpURLConnection.*;
+import static java.util.UUID.fromString;
 
 @AllArgsConstructor
 public class PutBookHandler implements HttpMethodBookHandler {
@@ -78,7 +76,8 @@ public class PutBookHandler implements HttpMethodBookHandler {
         }
 
         val attributes = exchange.getHttpContext().getAttributes();
-        val resourceId = (UUID) attributes.get(BOOK_ID.toString());
-        putBookService.updateBook(exchange, resourceId);
+        val uuidString = attributes.get(BOOK_ID.toString()).toString();
+        val uuid = fromString(uuidString);
+        putBookService.updateBook(exchange, uuid);
     }
 }
