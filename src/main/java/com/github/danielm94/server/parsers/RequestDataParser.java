@@ -10,7 +10,6 @@ import com.github.danielm94.server.parsers.headers.HeaderParserStrategy;
 import com.github.danielm94.server.parsers.requestline.RequestLine;
 import com.github.danielm94.server.parsers.requestline.RequestLineParserStrategy;
 import com.github.danielm94.server.parsers.requestline.RequestLineParsingException;
-import com.github.danielm94.server.requestdata.headers.HttpHeader;
 import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -21,13 +20,15 @@ import lombok.val;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Pattern;
+
+import static com.github.danielm94.server.requestdata.headers.HttpHeader.*;
+import static java.net.HttpURLConnection.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Flogger
 @AllArgsConstructor
@@ -92,28 +93,25 @@ public class RequestDataParser {
             log.atWarning()
                .withCause(e)
                .log("Could not get input stream from client socket.");
-            return sendOffExchangePrematurely(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR,
-                    "Server failed to retrieve input stream from client request.");
+            return sendOffExchangePrematurely(exchange, HTTP_INTERNAL_ERROR, "Server failed to retrieve input stream from client request.");
         }
 
         String requestString;
         try {
-            requestString = inputParser.parseInputStream(clientInputStream, StandardCharsets.UTF_8);
+            requestString = inputParser.parseInputStream(clientInputStream, UTF_8);
             log.atFine().log("Parsed the following String from the client socket input stream:\n%s", requestString);
         } catch (StreamParsingException e) {
             log.atWarning()
                .withCause(e)
                .log("Failed to parse request String");
-            return sendOffExchangePrematurely(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR,
-                    "Server failed to parse input stream from client request.");
+            return sendOffExchangePrematurely(exchange, HTTP_INTERNAL_ERROR, "Server failed to parse input stream from client request.");
         }
 
         val requestArray = requestString.split(NEW_LINE_REGEX_PATTERN);
 
         if (requestArray.length == 0) {
             log.atWarning().log("Client request string is empty after splitting by new line: %s", requestString);
-            return sendOffExchangePrematurely(exchange, HttpURLConnection.HTTP_BAD_REQUEST,
-                    "Empty request string.");
+            return sendOffExchangePrematurely(exchange, HTTP_BAD_REQUEST, "Empty request string.");
         }
 
         val requestLineString = requestArray[0];
@@ -127,13 +125,11 @@ public class RequestDataParser {
             log.atWarning()
                .withCause(e)
                .log("Failed to parse request line...");
-            return sendOffExchangePrematurely(exchange, HttpURLConnection.HTTP_BAD_REQUEST,
-                    "Malformed request line: " + requestLineString);
+            return sendOffExchangePrematurely(exchange, HTTP_BAD_REQUEST, "Malformed request line: " + requestLineString);
         }
 
         if (requestLine.getHttpMethod() == null) {
-            return sendOffExchangePrematurely(exchange, HttpURLConnection.HTTP_BAD_REQUEST,
-                    "Unsupported HttpMethod found in request line: " + requestLineString);
+            return sendOffExchangePrematurely(exchange, HTTP_BAD_REQUEST, "Unsupported HttpMethod found in request line: " + requestLineString);
         }
 
         exchange.setRequestMethod(requestLine.getHttpMethod().toString());
@@ -144,8 +140,7 @@ public class RequestDataParser {
             context = searchDynamicPathsForContext(path);
             if (context == null) {
                 log.atWarning().log("Server does not support the path: %s", path);
-                return sendOffExchangePrematurely(exchange, HttpURLConnection.HTTP_NOT_FOUND,
-                        "Server does not support the path: " + path);
+                return sendOffExchangePrematurely(exchange, HTTP_NOT_FOUND, "Server does not support the path: " + path);
             }
         }
         exchange.setHttpContext(context);
@@ -155,8 +150,8 @@ public class RequestDataParser {
 
         val headers = headerParser.parseHeaders(requestArray);
         exchange.setRequestHeaders(headers);
-        val contentLengthString = headers.getFirst(HttpHeader.CONTENT_LENGTH.toString());
 
+        val contentLengthString = headers.getFirst(CONTENT_LENGTH.toString());
         if (contentLengthString != null) {
             val requestBody = bodyParser.parseBody(requestArray);
             exchange.setRequestBody(requestBody);
