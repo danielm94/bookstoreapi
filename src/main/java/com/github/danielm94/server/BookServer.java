@@ -1,11 +1,6 @@
 package com.github.danielm94.server;
 
 import com.github.danielm94.server.context.BookContext;
-import com.github.danielm94.server.parsers.RequestDataParser;
-import com.github.danielm94.server.parsers.body.DefaultBodyParserStrategy;
-import com.github.danielm94.server.parsers.clientinput.DefaultClientInputParserStrategy;
-import com.github.danielm94.server.parsers.headers.DefaultHeaderParserStrategy;
-import com.github.danielm94.server.parsers.requestline.DefaultRequestLineParserStrategy;
 import com.github.danielm94.server.processors.RequestProcessor;
 import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpHandler;
@@ -18,6 +13,7 @@ import lombok.val;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -42,27 +38,28 @@ public class BookServer extends HttpServer {
 
     @Override
     public void bind(@NonNull InetSocketAddress addr, int backlog) {
-        this.address = addr;
+        address = addr;
         this.backlog = backlog;
     }
 
 
     @Override
-    @SneakyThrows(IOException.class)
     public void start() {
-        this.socket = new ServerSocket(address.getPort(), backlog, address.getAddress());
+        if (!instantiateServer()) return;
         serverIsRunning = true;
 
         while (serverIsRunning) {
-            val clientSocket = socket.accept();
-            log.atFine().log("Accepted new client socket...");
-            val parser = new RequestDataParser(contextMap, dynamicPaths,
-                    new DefaultClientInputParserStrategy(),
-                    new DefaultRequestLineParserStrategy(),
-                    new DefaultHeaderParserStrategy(),
-                    new DefaultBodyParserStrategy());
-            var exchange = parser.getHttpExchangeFromClientSocket(clientSocket);
-            val requestProcessor = new RequestProcessor(clientSocket, exchange);
+            Socket clientSocket;
+
+            try {
+                clientSocket = socket.accept();
+                log.atFine().log("Accepted new client socket...");
+            } catch (IOException e) {
+                log.atWarning().withCause(e).log("Exception occurred while accepting a connection");
+                return;
+            }
+
+            val requestProcessor = new RequestProcessor(clientSocket, contextMap, dynamicPaths);
             executor.execute(requestProcessor);
         }
     }
@@ -86,7 +83,7 @@ public class BookServer extends HttpServer {
 
     @Override
     public HttpContext createContext(String path, HttpHandler handler) {
-        var bookContext = new BookContext();
+        val bookContext = new BookContext();
         bookContext.setServer(this);
         bookContext.setPath(path);
         bookContext.setHandler(handler);
@@ -96,7 +93,7 @@ public class BookServer extends HttpServer {
 
     @Override
     public HttpContext createContext(String path) {
-        var bookContext = new BookContext();
+        val bookContext = new BookContext();
         bookContext.setServer(this);
         bookContext.setPath(path);
         contextMap.put(path, bookContext);
@@ -124,4 +121,13 @@ public class BookServer extends HttpServer {
         dynamicPaths.put(pattern, routeFunction);
     }
 
+    private boolean instantiateServer() {
+        try {
+            socket = new ServerSocket(address.getPort(), backlog, address.getAddress());
+        } catch (IOException e) {
+            log.atSevere().withCause(e).log("Failed to bind to address: " + address);
+            return false;
+        }
+        return true;
+    }
 }
